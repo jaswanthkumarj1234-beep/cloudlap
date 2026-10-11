@@ -7,6 +7,8 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io)
+[![CI](https://github.com/jaswanthkumarj1234-beep/cloudlap/actions/workflows/ci.yml/badge.svg)](https://github.com/jaswanthkumarj1234-beep/cloudlap/actions)
+[![Tests](https://img.shields.io/badge/Tests-26%20passed-brightgreen.svg)](tests/)
 
 **Free • No API Keys • Works from Phone • Your Data Stays on Your Machine**
 
