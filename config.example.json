@@ -1,0 +1,8 @@
+{
+  "port": 8787,
+  "timeout_seconds": 120,
+  "max_output_chars": 4000,
+  "allowed_directories": ["~"],
+  "log_file": "server.log",
+  "ngrok_domain": ""
+}

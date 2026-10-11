@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Logs
+*.log
+server.log
+
+# Memory/context (personal data)
+memory/
+
+# Binaries (users download their own)
+cloudflared.exe
+ngrok.exe
+CloudLap.exe
+
+# Temp files
+*.tmp
+test_*.txt
+
+# IDE
+.vscode/
+.idea/
+
+config.json

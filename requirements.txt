@@ -1,0 +1,4 @@
+mcp[cli]>=1.0.0
+httpx
+uvicorn
+psutil
