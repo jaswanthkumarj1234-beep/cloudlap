@@ -61,7 +61,7 @@ Your Phone (anywhere)          Your Laptop (at home)
 
 ### Step 1: Clone & Install
 ```bash
-git clone https://github.com/YOUR_USERNAME/cloudlap.git
+git clone https://github.com/jaswanthkumarj1234-beep/cloudlap.git
 cd cloudlap
 pip install -r requirements.txt
 ```
