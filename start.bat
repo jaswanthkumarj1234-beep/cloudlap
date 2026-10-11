@@ -4,50 +4,61 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
 echo ===================================================
-echo     Starting Claude Laptop Remote MCP Server
+echo     Starting CloudLap Remote MCP Server
 echo ===================================================
 echo.
 
-:: 1. Verify cloudflared.exe exists
-if not exist "cloudflared.exe" (
-    echo [ERROR] cloudflared.exe not found!
-    echo Running setup.bat first to configure environment...
-    call setup.bat
-    if not exist "cloudflared.exe" (
-        echo [ERROR] cloudflared.exe is still missing. Exiting.
+:: 1. Verify python
+set PYTHON_CMD=python
+python --version >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    py --version >nul 2>&1
+    if %ERRORLEVEL% equ 0 (
+        set PYTHON_CMD=py
+    ) else (
+        echo [ERROR] Python is not installed or not in PATH!
         pause
         exit /b 1
     )
 )
 
-:: 2. Start Python server in background
-set PYTHON_CMD=python
-python --version >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    py --version >nul 2>&1
-    if %ERRORLEVEL% equ 0 set PYTHON_CMD=py
+:: 2. Read ngrok domain from config.json
+set NGROK_DOMAIN=
+for /f "tokens=2 delims=:, " %%a in ('findstr "ngrok_domain" config.json 2^>nul') do (
+    set NGROK_DOMAIN=%%~a
 )
 
-echo [1/2] Starting Python Remote MCP server on http://localhost:8787 using '%PYTHON_CMD%' ...
-start "Claude MCP Python Server" /MIN %PYTHON_CMD% server.py
+if "%NGROK_DOMAIN%"=="" (
+    echo [ERROR] ngrok_domain is not configured in config.json!
+    echo Please edit config.json and set your domain first.
+    pause
+    exit /b 1
+)
 
-:: Give server 2 seconds to initialize
-timeout /t 2 /nobreak >nul
+:: 3. Clean up any stale instances on port 8787 or ngrok
+echo [1/3] Preparing ports and processes...
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 8787 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+taskkill /F /IM ngrok.exe >nul 2>&1
 
-:: 3. Start cloudflared tunnel
-echo [2/2] Starting Cloudflare Tunnel...
+:: 4. Start Python server
+echo [2/3] Starting CloudLap server on http://127.0.0.1:8787 ...
+start "CloudLap Server" /MIN %PYTHON_CMD% server.py
+timeout /t 3 /nobreak >nul
+
+:: 5. Start ngrok tunnel
+echo [3/3] Starting ngrok tunnel to %NGROK_DOMAIN% ...
 echo.
 echo =====================================================================
-echo  LOOK BELOW for the trycloudflare.com URL!
-echo  Copy the URL: https://[random-subdomain].trycloudflare.com
-echo  In Claude: Settings -^> Connectors -^> Add -^> Paste the URL
+echo  CloudLap is LIVE!
+echo  URL: https://%NGROK_DOMAIN%/mcp
+echo  Paste this in Claude: Settings -^> Connectors -^> Add Custom Connector
 echo =====================================================================
 echo.
 
-:: Run cloudflared attached to this console so user sees the live URL and incoming requests
-cloudflared.exe tunnel --url http://localhost:8787
+ngrok http --url=%NGROK_DOMAIN% 127.0.0.1:8787
 
 echo.
-echo Tunnel closed. Terminating background Python server if running...
-taskkill /FI "WINDOWTITLE eq Claude MCP Python Server*" /T /F >nul 2>&1
+echo Tunnel closed. Stopping server...
+taskkill /FI "WINDOWTITLE eq CloudLap Server*" /T /F >nul 2>&1
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 8787 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 echo Done.

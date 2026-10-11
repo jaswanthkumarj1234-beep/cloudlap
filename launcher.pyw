@@ -87,7 +87,7 @@ class CloudLapApp:
         # Tunnel row
         r2 = tk.Frame(status_card, bg=card_bg)
         r2.pack(fill="x", pady=3)
-        tk.Label(r2, text="Cloudflare Tunnel", font=("Segoe UI", 11), bg=card_bg, fg=white).pack(side="left")
+        tk.Label(r2, text="ngrok Tunnel", font=("Segoe UI", 11), bg=card_bg, fg=white).pack(side="left")
         self.lbl_tunnel = tk.Label(r2, text="⬤  Offline", font=("Segoe UI", 11, "bold"),
                                     bg=card_bg, fg=red)
         self.lbl_tunnel.pack(side="right")
@@ -161,8 +161,6 @@ class CloudLapApp:
         """Check if required files exist."""
         if not SERVER_SCRIPT.exists():
             self.log("⚠ server.py not found!")
-        if not CLOUDFLARED.exists():
-            self.log("⚠ cloudflared.exe not found! Run setup.bat first.")
         else:
             self.log("✅ All files ready. Click START to begin.")
 
@@ -174,16 +172,27 @@ class CloudLapApp:
             self.start_server()
 
     def start_server(self):
-        """Start MCP server + Cloudflare tunnel."""
+        """Start MCP server + ngrok tunnel."""
         self.btn_start.config(state="disabled", text="⏳  Starting...", bg="#555")
         self.log("Starting MCP server on port 8787...")
         threading.Thread(target=self._start_worker, daemon=True).start()
 
     def _start_worker(self):
         try:
+            # 0) Clean up any stale processes holding port 8787 or ngrok
+            try:
+                subprocess.run(
+                    ["powershell", "-NoProfile", "-Command",
+                     "Get-NetTCPConnection -LocalPort 8787 -ErrorAction SilentlyContinue | "
+                     "ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"],
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                    timeout=5
+                )
+            except Exception:
+                pass
+
             # 1) Find python executable
             if getattr(sys, 'frozen', False):
-                # Running as .exe — find python in PATH or known locations
                 python_exe = None
                 for p in [
                     os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "Python", "Python312", "python.exe"),
@@ -201,12 +210,13 @@ class CloudLapApp:
                 if "pythonw" in python_exe.lower():
                     python_exe = python_exe.lower().replace("pythonw", "python")
 
-            # 2) Start MCP server
+            # 2) Start MCP server (redirect stdout/stderr to server.log to prevent pipe deadlocks!)
+            log_file = open(APP_DIR / "server.log", "a", encoding="utf-8")
             self.server_proc = subprocess.Popen(
                 [python_exe, str(SERVER_SCRIPT)],
                 cwd=str(APP_DIR),
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                text=True, errors="replace",
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
 
@@ -217,7 +227,7 @@ class CloudLapApp:
 
             # Check server didn't crash
             if self.server_proc.poll() is not None:
-                self.root.after(0, lambda: self.log("❌ Server crashed! Check server.py"))
+                self.root.after(0, lambda: self.log("❌ Server crashed! Check server.log"))
                 self.root.after(0, lambda: self.lbl_server.config(text="⬤  Error", fg="#ef476f"))
                 self.root.after(0, lambda: self.btn_start.config(state="normal", text="▶   S T A R T", bg="#06d6a0"))
                 return
@@ -230,6 +240,7 @@ class CloudLapApp:
             for p in [
                 str(APP_DIR / "ngrok.exe"),
                 os.path.join(os.environ.get("LOCALAPPDATA", ""), "ngrok", "ngrok.exe"),
+                os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "WinGet", "Packages", "Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe", "ngrok.exe"),
             ]:
                 if os.path.isfile(p):
                     ngrok_exe = p
@@ -251,15 +262,24 @@ class CloudLapApp:
                 self.root.after(0, self._reset_ui)
                 return
 
+            # Terminate any old ngrok instance first to avoid conflict
+            try:
+                subprocess.run(["taskkill", "/F", "/IM", "ngrok.exe"],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            except Exception:
+                pass
+            time.sleep(1)
+
+            # Start ngrok with explicit 127.0.0.1:8787 (IPv4) to avoid IPv6 [::1] connection refused!
             self.tunnel_proc = subprocess.Popen(
-                [ngrok_exe, "http", f"--url={NGROK_DOMAIN}", "8787"],
+                [ngrok_exe, "http", f"--url={NGROK_DOMAIN}", "127.0.0.1:8787"],
                 cwd=str(APP_DIR),
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                text=True, errors="replace",
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
 
-            # Wait for ngrok to connect (check its local API)
             time.sleep(5)
 
             if self.tunnel_proc.poll() is not None:
@@ -270,11 +290,6 @@ class CloudLapApp:
             self.tunnel_url = f"https://{NGROK_DOMAIN}/mcp"
             self.is_running = True
             self.root.after(0, self._on_connected)
-
-            # Keep reading stdout to prevent buffer overflow
-            if self.tunnel_proc and self.tunnel_proc.stdout:
-                for _ in self.tunnel_proc.stdout:
-                    pass
 
         except Exception as e:
             self.root.after(0, lambda: self.log(f"❌ Error: {e}"))

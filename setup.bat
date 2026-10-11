@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ===================================================
-echo     Claude Laptop Remote MCP Server Setup
+echo     CloudLap Remote MCP Server Setup
 echo ===================================================
 echo.
 
@@ -18,7 +18,7 @@ if %ERRORLEVEL% neq 0 (
         set PYTHON_CMD=py
     ) else (
         echo [ERROR] Python is not found in your PATH!
-        echo Please install Python 3.10+ from https://www.python.org/ or Microsoft Store.
+        echo Please install Python 3.10+ from https://www.python.org/
         echo Ensure 'Add Python to PATH' is checked during installation.
         pause
         exit /b 1
@@ -38,42 +38,48 @@ if %ERRORLEVEL% neq 0 (
 )
 echo Python packages installed successfully.
 
-:: 3. Download cloudflared if not present
+:: 3. Check ngrok
 echo.
-echo [3/4] Checking Cloudflare Tunnel binary (cloudflared.exe)...
-if not exist "cloudflared.exe" (
-    echo Downloading cloudflared.exe...
-    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe', 'cloudflared.exe')"
-    if not exist "cloudflared.exe" (
-        echo [ERROR] Failed to download cloudflared.exe.
-        echo You can manually download it from:
-        echo https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe
-        echo Place cloudflared.exe in this folder.
+echo [3/4] Checking ngrok installation...
+ngrok version >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    echo Installing ngrok via winget...
+    winget install ngrok.ngrok --accept-package-agreements --accept-source-agreements --silent >nul 2>&1
+    ngrok version >nul 2>&1
+    if %ERRORLEVEL% neq 0 (
+        echo [NOTE] Please install ngrok from https://ngrok.com/download or run: winget install ngrok.ngrok
     ) else (
-        echo Downloaded cloudflared.exe successfully.
+        echo ngrok installed successfully.
     )
 ) else (
-    echo cloudflared.exe already exists.
+    echo ngrok is installed.
 )
 
-:: 4. Instructions and launch prompt
+:: 4. Config check
+echo.
+echo [4/4] Checking configuration...
+if not exist "config.json" (
+    if exist "config.example.json" (
+        copy config.example.json config.json >nul
+        echo Created config.json from template.
+    )
+)
+
 echo.
 echo ===================================================
-echo [4/4] Setup complete!
+echo Setup complete!
 echo.
 echo Next Steps:
-echo 1. Check config.json to customize settings or auth tokens.
-echo 2. Run 'start.bat' to launch the server and Cloudflare tunnel.
-echo 3. In Claude, go to Settings -^> Connectors -^> Add Custom Connector,
-echo    and paste the public HTTPS URL printed by start.bat.
+echo 1. Edit config.json and set your 'ngrok_domain'
+echo 2. Run 'CloudLap.exe' (GUI) or 'start.bat' (Console)
+echo 3. In Claude: Settings -^> Connectors -^> Add Custom Connector
+echo    Paste URL: https://[your-ngrok-domain]/mcp
 echo ===================================================
 echo.
 
-set /p STARTNOW="Would you like to start the server now? (Y/N): "
+set /p STARTNOW="Would you like to start CloudLap now? (Y/N): "
 if /i "%STARTNOW%"=="Y" (
-    echo Starting server...
-    call "%~dp0start.bat"
+    start "" "%~dp0CloudLap.exe"
 ) else (
-    echo You can start the server anytime by running start.bat.
     pause
 )
