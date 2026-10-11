@@ -85,6 +85,7 @@ def check_command_security(command: str) -> Optional[str]:
     """Check if command matches any dangerous blocked pattern."""
     for pattern in compiled_blocked_patterns:
         if pattern.search(command):
+            audit_log("run_command", {"command": command}, "BLOCKED", f"Matched: {pattern.pattern}")
             return f"Security Refusal: Command matched blocked safety rule: {pattern.pattern}"
     return None
 
@@ -96,6 +97,77 @@ def format_bytes(size: int) -> str:
             return f"{size:3.1f} {unit}"
         size /= 1024.0
     return f"{size:.1f} PB"
+
+
+# ---------------------------------------------------------
+# Audit Log — every tool call is logged (OpenClaw's #1 flaw)
+# ---------------------------------------------------------
+AUDIT_LOG_PATH = Path(__file__).resolve().parent / "audit_log.jsonl"
+
+
+def audit_log(tool_name: str, args: dict, status: str, detail: str = ""):
+    """Append a structured audit entry for every tool call."""
+    entry = {
+        "ts": datetime.datetime.now().isoformat(timespec="seconds"),
+        "tool": tool_name,
+        "args": {k: (v[:200] if isinstance(v, str) else v) for k, v in args.items()},
+        "status": status,
+        "detail": detail[:500] if detail else "",
+    }
+    try:
+        with open(AUDIT_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception:
+        pass  # never let audit logging break the server
+
+
+# ---------------------------------------------------------
+# Rate Limiter — prevent abuse (OpenClaw's #2 flaw)
+# ---------------------------------------------------------
+_rate_log: list[float] = []
+RATE_LIMIT = 30  # max calls per minute
+
+
+def check_rate_limit() -> Optional[str]:
+    """Return error string if rate limit exceeded, else None."""
+    import time as _time
+    now = _time.time()
+    _rate_log[:] = [t for t in _rate_log if now - t < 60]
+    if len(_rate_log) >= RATE_LIMIT:
+        audit_log("rate_limit", {}, "BLOCKED", f"{len(_rate_log)} calls in last 60s")
+        return f"Rate limit exceeded: {RATE_LIMIT} calls/minute. Wait a moment."
+    _rate_log.append(now)
+    return None
+
+
+# ---------------------------------------------------------
+# Directory Sandbox — restrict file access (OpenClaw's #3 flaw)
+# ---------------------------------------------------------
+def check_path_allowed(file_path: str) -> Optional[str]:
+    """Check if a path is within the allowed directories from config."""
+    allowed = config.get("allowed_directories", ["~"])
+    resolved = Path(os.path.expanduser(file_path)).resolve()
+
+    # Always block sensitive files regardless of allowed_directories
+    sensitive = [".ssh", "id_rsa", ".aws", ".npmrc", ".git-credentials",
+                 ".env", "credentials", "secrets", "tokens"]
+    path_str = str(resolved).lower()
+    for s in sensitive:
+        if s.lower() in path_str:
+            audit_log("path_check", {"path": file_path}, "BLOCKED", f"Sensitive path: {s}")
+            return f"Security Refusal: Access to sensitive path blocked ({s})"
+
+    # If allowed_directories is ["~"], allow anything under home
+    for allowed_dir in allowed:
+        allowed_resolved = Path(os.path.expanduser(allowed_dir)).resolve()
+        try:
+            resolved.relative_to(allowed_resolved)
+            return None  # path is within allowed directory
+        except ValueError:
+            continue
+
+    audit_log("path_check", {"path": file_path}, "BLOCKED", "Outside allowed directories")
+    return f"Security Refusal: Path '{file_path}' is outside allowed directories: {allowed}"
 
 
 # ---------------------------------------------------------
@@ -141,6 +213,11 @@ async def run_command(command: str, cwd: str = "") -> str:
         Exit code, stdout, and stderr output (last 4000 characters).
     """
     logger.info("Executing command: %s (cwd: %s)", command, cwd or "HOME")
+
+    # 0. Rate Limit
+    rate_error = check_rate_limit()
+    if rate_error:
+        return rate_error
 
     # 1. Security Check
     security_error = check_command_security(command)
@@ -222,6 +299,7 @@ async def run_command(command: str, cwd: str = "") -> str:
     if not stdout_truncated and not stderr_truncated:
         result_parts.append("(Command produced no output)")
 
+    audit_log("run_command", {"command": command, "cwd": cwd}, "OK", f"exit={returncode}")
     return "\n\n".join(result_parts)
 
 
@@ -236,7 +314,17 @@ async def read_file(path: str) -> str:
         The content of the file.
     """
     logger.info("Reading file: %s", path)
+
+    rate_error = check_rate_limit()
+    if rate_error:
+        return rate_error
+
+    path_error = check_path_allowed(path)
+    if path_error:
+        return path_error
+
     file_path = Path(os.path.expanduser(path)).resolve()
+    audit_log("read_file", {"path": str(file_path)}, "OK")
 
     if not file_path.exists():
         return f"Error: File does not exist: {file_path}"
@@ -275,7 +363,17 @@ async def write_file(path: str, content: str) -> str:
         Confirmation message with path and size written.
     """
     logger.info("Writing file: %s", path)
+
+    rate_error = check_rate_limit()
+    if rate_error:
+        return rate_error
+
+    path_error = check_path_allowed(path)
+    if path_error:
+        return path_error
+
     file_path = Path(os.path.expanduser(path)).resolve()
+    audit_log("write_file", {"path": str(file_path), "size": len(content)}, "OK")
 
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)

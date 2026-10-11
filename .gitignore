@@ -27,3 +27,5 @@ test_*.txt
 .idea/
 
 config.json
+
+audit_log.jsonl

@@ -79,7 +79,12 @@ ngrok config add-authtoken YOUR_TOKEN_HERE
 ```
 
 ### Step 3: Configure
-Edit `config.json` and set your ngrok domain:
+```bash
+# Copy the example config
+copy config.example.json config.json
+
+# Edit config.json and set your ngrok domain:
+```
 ```json
 {
   "ngrok_domain": "your-name.ngrok-free.dev"
@@ -130,15 +135,27 @@ Account 2: "Load my context"
 
 Tools: `save_context`, `load_context`, `append_memory`, `list_projects`
 
-## 🛡️ Security
+## 🛡️ Security (Built to Fix OpenClaw's Mistakes)
 
-- ✅ **Command Blocklist** — Dangerous commands blocked (rm -rf, format, registry edits, etc.)
-- ✅ **120s Timeout** — Runaway commands are killed
-- ✅ **HTTPS Encrypted** — All traffic encrypted via ngrok
-- ✅ **No Open Ports** — No firewall/router changes needed
-- ✅ **Your Data** — Everything stays on YOUR machine. No cloud storage.
+CloudLap was designed with security lessons from OpenClaw's 500+ vulnerabilities:
 
-> ⚠️ **Important:** Your ngrok URL is accessible to anyone who has it. Keep it private. For production use, add authentication via ngrok's auth features.
+| Vulnerability | OpenClaw | CloudLap |
+|---|---|---|
+| No audit trail | ❌ No logging | ✅ **Every tool call logged** to `audit_log.jsonl` |
+| No rate limiting | ❌ Unlimited abuse | ✅ **30 calls/minute** rate limiter |
+| Access to sensitive files | ❌ `.ssh`, `.env` exposed | ✅ **Sensitive paths blocked** automatically |
+| No directory sandbox | ❌ Full filesystem access | ✅ **Configurable `allowed_directories`** |
+| Dangerous commands | ❌ `rm -rf /` allowed | ✅ **12+ pattern blocklist** |
+| Runaway processes | ❌ No timeouts | ✅ **120-second timeout** |
+| Insecure defaults | ❌ Open by default | ✅ **Secure by default** |
+| No encryption | ❌ HTTP possible | ✅ **HTTPS only** (via ngrok) |
+
+Additional security:
+- ✅ **No open ports** — no firewall/router changes needed
+- ✅ **Your data stays on YOUR machine** — no cloud storage
+- ✅ **No plugins/skills system** — no attack surface for malicious extensions
+
+> ⚠️ **Important:** Your ngrok URL is accessible to anyone who has it. Keep it private.
 
 ## 📁 Project Structure
 
