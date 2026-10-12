@@ -11,7 +11,9 @@ import shutil
 import socket
 import subprocess
 import sys
+import re
 import threading
+import time
 import urllib.request
 import webbrowser
 import zipfile
@@ -81,6 +83,66 @@ def download_ngrok(progress) -> str:
     return str(dest / "ngrok.exe")
 
 
+def _ngrok_error(text: str, domain: str) -> str:
+    m = re.search(r"ERR_NGROK_(\d+)", text)
+    code = m.group(0) if m else ""
+    n = m.group(1) if m else ""
+    if n == "108":
+        return ("Your ngrok account is already connected on another computer (a free account allows "
+                "one at a time). Stop CloudLap there first, then test again.")
+    if n in ("105", "106", "107", "121"):
+        return "ngrok did not accept your Authtoken. Copy it again from the Authtoken page and paste it."
+    if n == "334":
+        return (f"{domain} is already online somewhere else (another computer, or CloudLap is already "
+                "running here). Stop it there first, or use a different domain.")
+    if code:
+        return (f"ngrok refused the domain ({code}). Use the domain shown on your ngrok Domains page, "
+                "created in the same account as the Authtoken.")
+    return "Could not reach ngrok. Check your internet connection and try again."
+
+
+def test_tunnel(ngrok: str, token: str, domain: str, port: int):
+    """Open the tunnel for a few seconds. Returns (ok, message)."""
+    if token and run([ngrok, "config", "add-authtoken", token], timeout=30) != 0:
+        return False, "ngrok did not accept that Authtoken. Copy it again and paste it."
+    # CloudLap itself may already be online on this domain
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:4040/api/tunnels", timeout=2) as r:
+            if domain in r.read().decode("utf-8", "ignore"):
+                return True, f"Connected. {domain} is already online from this computer."
+    except Exception:
+        pass
+    proc = subprocess.Popen(
+        [ngrok, "http", f"--url={domain}", f"127.0.0.1:{port}", "--log=stdout", "--log-format=json"],
+        cwd=ROOT, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        creationflags=NO_WINDOW, text=True, encoding="utf-8", errors="ignore")
+    lines = []
+
+    def reader():
+        for line in proc.stdout:
+            lines.append(line)
+    threading.Thread(target=reader, daemon=True).start()
+    ok, start = False, time.time()
+    try:
+        while time.time() - start < 25:
+            text = "".join(lines)
+            if "started tunnel" in text and domain in text:
+                ok = True
+                break
+            if proc.poll() is not None or "ERR_NGROK_" in text:
+                time.sleep(0.5)
+                break
+            time.sleep(0.5)
+    finally:
+        try:
+            proc.kill()
+        except OSError:
+            pass
+    if ok:
+        return True, f"Connected. ngrok accepted your Authtoken and {domain}."
+    return False, _ngrok_error("".join(lines), domain)
+
+
 class FlatButton(tk.Label):
     def __init__(self, parent, text, command, bg=ACCENT, hover=ACCENT_HOVER, fg=TEXT,
                  font=("Segoe UI", 10, "bold"), padx=16, pady=8):
@@ -124,8 +186,8 @@ class Wizard(tk.Tk):
         super().__init__()
         self.title("CloudLap setup")
         self.configure(bg=BG)
-        self.geometry("560x720")
-        self.minsize(520, 660)
+        self.geometry("560x760")
+        self.minsize(520, 700)
         self.cfg = {}
         self.totp = None
         self.totp_setup = None
@@ -137,6 +199,9 @@ class Wizard(tk.Tk):
         self.minutes = tk.StringVar(value="60")
         self.step = 0
         self.busy = False
+        self.form_ready = False
+        self.tested_key = None
+        self.skip_key = None
 
         style = ttk.Style(self)
         style.theme_use("clam")
@@ -403,21 +468,102 @@ class Wizard(tk.Tk):
         self.button("Open the folder", open_folder)
         self.text("3.  Click  Check again  below.", pad=(8, 4))
 
+    def field_row(self, var):
+        row = tk.Frame(self.body, bg=CARD)
+        row.pack(anchor="w", pady=(0, 10))
+        e = tk.Entry(row, textvariable=var, width=36, font=("Segoe UI", 11), bg=INPUT, fg=TEXT,
+                     insertbackground=TEXT, relief="flat", highlightthickness=1,
+                     highlightbackground=BORDER, highlightcolor=ACCENT)
+        e.pack(side="left", ipady=7)
+
+        def paste():
+            try:
+                var.set(self.clipboard_get().strip())
+            except tk.TclError:
+                pass
+        FlatButton(row, "Paste", paste, bg=BORDER, hover="#3d444d", padx=12, pady=6,
+                   font=("Segoe UI", 9)).pack(side="left", padx=(8, 0))
+        var.trace_add("write", lambda *a: self.on_edit())
+
+    def head_row(self, label, button_text, url):
+        row = tk.Frame(self.body, bg=CARD)
+        row.pack(fill="x", pady=(0, 4))
+        tk.Label(row, text=label, bg=CARD, fg=TEXT, font=("Segoe UI Semibold", 10)).pack(side="left")
+        FlatButton(row, button_text, self.opener(url), bg=BORDER, hover="#3d444d", padx=10, pady=4,
+                   font=("Segoe UI", 9)).pack(side="right")
+
+    def on_edit(self):
+        if self.step == 2 and self.form_ready and self.next_btn.cget("text") != "Next":
+            self.set_next("Next", True)
+
     def build_ngrok_form(self):
         self.form_ready = True
-        self.text("1.  Sign in to ngrok (free), copy your Authtoken, and paste it here:", pad=(0, 4))
-        self.button("Open ngrok: Authtoken page",
-                    self.opener("https://dashboard.ngrok.com/get-started/your-authtoken"))
+        self.text("ngrok gives your laptop a private web address, so Claude on your phone or any other "
+                  "device can reach it. It is free. Sign up at ngrok.com, then copy two things:",
+                  size=9, color=MUTED, pad=(0, 8))
+        FlatButton(self.body, "Open ngrok sign-up", self.opener("https://dashboard.ngrok.com/signup"),
+                   bg=BORDER, hover="#3d444d", padx=12, pady=5, font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 12))
+        self.head_row("1.  Your Authtoken", "Open Authtoken page",
+                      "https://dashboard.ngrok.com/get-started/your-authtoken")
         self.token_var = tk.StringVar()
-        self.field(self.token_var)
-        self.paste_button(self.token_var)
-        self.text("2.  Create your free domain, copy it (looks like  name.ngrok-free.dev), and paste it here:",
-                  pad=(8, 4))
-        self.button("Open ngrok: Domains page", self.opener("https://dashboard.ngrok.com/domains"))
+        self.field_row(self.token_var)
+        self.head_row("2.  Your free domain (name.ngrok-free.dev)", "Open Domains page",
+                      "https://dashboard.ngrok.com/domains")
         self.domain_var = tk.StringVar(value=self.cfg.get("ngrok_domain", ""))
-        self.field(self.domain_var)
-        self.paste_button(self.domain_var)
+        self.field_row(self.domain_var)
+        self.text("No domain listed? Click  Create domain  on that page and copy what it shows.",
+                  size=9, color=MUTED, pad=(0, 8))
+        self.test_btn = FlatButton(self.body, "Test connection", lambda: self.run_test(advance=False),
+                                   padx=14, pady=7)
+        self.test_btn.pack(anchor="w", pady=(0, 6))
         self.msg = self.text("", color=RED, pad=(0, 0))
+
+    def read_fields(self):
+        domain = self.domain_var.get().replace("https://", "").replace("http://", "").strip("/ ")
+        return self.token_var.get().strip(), domain
+
+    def validate_fields(self):
+        token, domain = self.read_fields()
+        if "." not in domain:
+            self.msg.config(text="Paste your ngrok domain, for example name.ngrok-free.dev", fg=RED)
+            return None
+        if not token and not has_authtoken():
+            self.msg.config(text="Paste your ngrok Authtoken first (step 1).", fg=RED)
+            return None
+        return token, domain
+
+    def run_test(self, advance):
+        if self.busy:
+            return
+        fields = self.validate_fields()
+        if not fields:
+            return
+        token, domain = fields
+        self.busy = True
+        self.msg.config(text="Checking the connection... (up to 25 seconds)", fg=AMBER)
+        self.set_next("Next", False)
+        port = int(self.cfg.get("port", 8787))
+
+        def work():
+            ok, message = test_tunnel(self.ngrok_path, token, domain, port)
+            self.after(0, self.test_done, (token, domain), ok, message, advance)
+        threading.Thread(target=work, daemon=True).start()
+
+    def test_done(self, key, ok, message, advance):
+        self.busy = False
+        if self.step != 2:
+            return
+        self.set_next("Next", True)
+        if ok:
+            self.tested_key = key
+            self.msg.config(text=message, fg=GREEN)
+            if advance:
+                self.go_next()
+            return
+        self.msg.config(text=message, fg=RED)
+        if advance:
+            self.skip_key = key
+            self.set_next("Continue anyway", True)
 
     def leave_2(self):
         if self.busy:
@@ -429,17 +575,17 @@ class Wizard(tk.Tk):
                 self.set_next("Next", True)
                 self.build_ngrok_form()
             return False
-        domain = self.domain_var.get().replace("https://", "").replace("http://", "").strip("/ ")
-        if "." not in domain:
-            self.msg.config(text="Paste your ngrok domain, for example name.ngrok-free.dev")
+        fields = self.validate_fields()
+        if not fields:
             return False
-        token = self.token_var.get().strip()
-        if not token and not has_authtoken():
-            self.msg.config(text="Paste your ngrok Authtoken first (step 1).")
-            return False
-        if token and run([self.ngrok_path, "config", "add-authtoken", token], timeout=30) != 0:
-            self.msg.config(text="ngrok did not accept that token. Check it and try again.")
-            return False
+        token, domain = fields
+        if self.tested_key != (token, domain):
+            if self.skip_key == (token, domain):
+                if token:
+                    run([self.ngrok_path, "config", "add-authtoken", token], timeout=30)
+            else:
+                self.run_test(advance=True)
+                return False
         self.cfg["ngrok_domain"] = domain
         return True
 
