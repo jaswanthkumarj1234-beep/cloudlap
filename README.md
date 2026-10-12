@@ -69,6 +69,8 @@ When Claude connects, the server sends instructions listing any saved project co
 
 ## Quick Start
 
+> New here? Follow the step-by-step [SETUP.md](SETUP.md), which includes the authenticator lock.
+
 ### Prerequisites
 
 - Windows 10 or 11 (macOS and Linux support planned)
@@ -161,12 +163,13 @@ CloudLap gives an AI agent direct access to your machine. That's powerful but in
 | Path sandboxing | File operations restricted to `allowed_directories` |
 | Sensitive paths | `.ssh`, `.env`, `.aws`, credentials files blocked regardless of sandbox config |
 | Rate limiting | 30 tool calls per minute, excess rejected |
+| Two-factor unlock | Tools locked until the owner enters an authenticator code; unlock expires after `unlock_minutes` |
 | Audit trail | Every tool call logged with timestamp, arguments, and result status |
 | Timeouts | Commands killed after 120 seconds |
 | No plugins | No extension system — no attack surface for malicious third-party code |
 | Encryption | All traffic encrypted via ngrok's TLS termination |
 
-> **Important:** Your ngrok URL is the only authentication barrier. Anyone with the URL has full access to the tools. Keep it private. For additional protection, use [ngrok's IP restrictions](https://ngrok.com/docs/http/ip-restrictions/) or OAuth features.
+> **Important:** Run `python totp_setup.py --show-qr` once and scan the QR code with an authenticator app. Until you do, the endpoint has no authentication and anyone with your ngrok URL has full access. With it set up, every tool except `get_system_info` stays locked until you call `unlock` with a fresh 6-digit code. Keep the URL private as well. See [SETUP.md](SETUP.md) for the full step-by-step guide.
 
 See [SECURITY.md](SECURITY.md) for vulnerability reporting and hardening recommendations.
 

@@ -70,6 +70,8 @@ echo ===================================================
 echo Setup complete!
 echo.
 echo Next Steps:
+echo 0. IMPORTANT: run  pip install qrcode pillow  then  python totp_setup.py --show-qr
+echo    and scan the QR code. Without it the endpoint has no authentication.
 echo 1. Edit config.json and set your 'ngrok_domain'
 echo 2. Run 'CloudLap.exe' (GUI) or 'start.bat' (Console)
 echo 3. In Claude: Settings -^> Connectors -^> Add Custom Connector
