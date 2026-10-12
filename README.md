@@ -69,7 +69,23 @@ When Claude connects, the server sends instructions listing any saved project co
 
 ## Quick Start
 
-> New here? Follow the step-by-step [SETUP.md](SETUP.md), which includes the authenticator lock.
+### Easy setup (recommended)
+
+1. Install [Python 3.10+](https://python.org/downloads) and tick **Add Python to PATH**.
+2. Click **Code > Download ZIP** on this page, unzip it, and double-click **`setup.bat`**.
+3. Answer the questions. The wizard installs everything, shows a QR code to scan with an authenticator app,
+   sets up ngrok, starts CloudLap, and prints the address to paste into Claude.
+
+You will need a phone with an authenticator app (Google or Microsoft Authenticator) and a free
+[ngrok](https://ngrok.com) account. Full walkthrough: [SETUP.md](SETUP.md).
+
+**Each time you use it:** open your authenticator app and tell Claude
+"Connect to CloudLap, code is 123456" (the real 6-digit code). Every tool except `get_system_info`
+stays locked until then. Say "lock CloudLap" when you finish.
+
+### Manual setup (advanced)
+
+Prefer to do it yourself? Follow these steps, and run `python totp_setup.py --show-qr` before you start the server.
 
 ### Prerequisites
 
@@ -139,7 +155,7 @@ ngrok http --url=your-domain.ngrok-free.dev 127.0.0.1:8787
 2. Go to **Settings → Connectors → Add Custom Connector**
 3. Name: `CloudLap`
 4. URL: `https://your-domain.ngrok-free.dev/mcp`
-5. Save and start chatting
+5. Save, then unlock it in chat with a fresh authenticator code (see above)
 
 ## How It Works
 

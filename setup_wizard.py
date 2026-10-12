@@ -175,11 +175,12 @@ def main() -> None:
         autostart = yes("Start CloudLap automatically when you sign in to Windows?", True)
     if autostart:
         startup = Path(os.environ["APPDATA"]) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
+        startup.mkdir(parents=True, exist_ok=True)
         vbs = startup / "CloudLap Watchdog.vbs"
         vbs.write_text(
-            "' Starts CloudLap at login. Delete this file to turn auto-start off.\r\n"
+            "' Starts CloudLap at login. Delete this file to turn auto-start off.\n"
             'CreateObject("WScript.Shell").Run "powershell.exe -NoProfile -WindowStyle Hidden '
-            f'-ExecutionPolicy Bypass -File ""{watchdog}""", 0, False\r\n',
+            f'-ExecutionPolicy Bypass -File ""{watchdog}""", 0, False\n',
             encoding="utf-8",
         )
         print("Auto-start installed")
