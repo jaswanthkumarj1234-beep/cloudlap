@@ -1,3 +1,14 @@
+## Download and install (no coding needed)
+
+1. Click the green **Code** button at the top of this page, then **Download ZIP**.
+2. Open the ZIP and drag the folder anywhere, for example your Desktop.
+3. Double-click **Start CloudLap.bat**. A window opens and guides you through setup.
+
+That is all. Windows may show a blue SmartScreen box: click **More info**, then **Run anyway**.
+No typing commands and no pasting into a terminal. Everything else below is for developers.
+
+---
+
 <div align="center">
 
 # CloudLap
