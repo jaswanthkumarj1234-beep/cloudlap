@@ -542,12 +542,13 @@ class CloudLapApp:
             self.log(f"Could not change auto-start: {exc}", "bad")
 
     def run_setup(self):
-        wizard = APP_DIR / "setup_wizard.py"
+        wizard = APP_DIR / "setup_gui.pyw"
         if not wizard.exists():
-            messagebox.showinfo("CloudLap", "setup_wizard.py was not found in the CloudLap folder.")
+            messagebox.showinfo("CloudLap", "setup_gui.pyw was not found in the CloudLap folder.")
             return
-        flags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
-        subprocess.Popen([find_python(), str(wizard)], cwd=str(APP_DIR), creationflags=flags)
+        py = Path(find_python())
+        pyw = py.with_name("pythonw.exe")
+        subprocess.Popen([str(pyw if pyw.exists() else py), str(wizard)], cwd=str(APP_DIR))
         self.log("Setup opened in a new window. Restart CloudLap when it finishes.")
 
     def open_guide(self):
