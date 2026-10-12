@@ -5,7 +5,7 @@ All notable changes to CloudLap are documented here.
 ## [Unreleased]
 
 ### Features
-- `watchdog.ps1`: keeps the server and ngrok tunnel running, single instance, rolling `watchdog.log`; start it hidden at login
+- `watchdog.ps1`: keeps the server and ngrok tunnel running, single instance, rolling `watchdog.log`; start it hidden at login. It also asks Windows not to sleep while it runs; set `"keep_display_on": true` in `config.json` to keep the screen on as well
 - Automatic activity log: state-changing `write_file` and `run_command` calls are recorded in `memory/activity_log.md` (last 200 lines) and appended to `load_context` output
 - Session nudge: the first tool call of a new session (or after 30 idle minutes) is followed by a reminder listing saved projects and telling the model to call `load_context`
 

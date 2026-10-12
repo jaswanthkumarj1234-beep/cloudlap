@@ -2,6 +2,7 @@
 CloudLap watchdog
 Keeps the MCP server and the ngrok tunnel running. Relaunches either one if it stops.
 Safe to start more than once: only one copy runs at a time.
+Also asks Windows not to sleep while it runs. Set "keep_display_on": true in config.json to keep the screen on too.
 
 Run hidden at login, for example from the Startup folder:
   powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "<path>\watchdog.ps1"
@@ -71,6 +72,14 @@ function Start-Tunnel([string]$domain, [int]$p) {
 }
 
 Say "watchdog started (interval ${IntervalSeconds}s)"
+
+# Keep-awake: ES_CONTINUOUS (0x80000000) | ES_SYSTEM_REQUIRED (0x1) [| ES_DISPLAY_REQUIRED (0x2)]
+$keepAwakeReady = $false
+try {
+    Add-Type -Namespace CloudLap -Name Power -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'
+    $keepAwakeReady = $true
+} catch { Say ("keep-awake unavailable: " + $_.Exception.Message) }
+$lastFlags = [uint32]0
 $lastServerOk = $true
 $lastTunnelOk = $true
 
@@ -80,6 +89,16 @@ while ($true) {
     if ($cfg -and $cfg.port) { $port = [int]$cfg.port }
     $domain = ""
     if ($cfg -and $cfg.ngrok_domain) { $domain = [string]$cfg.ngrok_domain }
+
+    if ($keepAwakeReady) {
+        $flags = [uint32]2147483649
+        if ($cfg -and $cfg.keep_display_on) { $flags = [uint32]2147483651 }
+        [void][CloudLap.Power]::SetThreadExecutionState($flags)
+        if ($flags -ne $lastFlags) {
+            Say ("keep-awake active, screen kept on: " + [bool]($flags -band 2))
+            $lastFlags = $flags
+        }
+    }
 
     $serverOk = Port-Up $port
     if (-not $serverOk) {
