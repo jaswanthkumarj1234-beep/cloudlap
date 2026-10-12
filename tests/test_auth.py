@@ -14,6 +14,8 @@ RFC_SECRET = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"  # ASCII "12345678901234567890"
 
 def _reset(server, secret=RFC_SECRET):
     server.config["totp_secret"] = secret
+    server.config["unlock_minutes"] = 10  # pinned so tests do not depend on a local config.json
+    server.config["max_unlock_failures"] = 3
     server._AUTH.update({"unlocked_until": 0.0, "locked_until": 0.0, "last_counter": -1, "fails": []})
 
 
