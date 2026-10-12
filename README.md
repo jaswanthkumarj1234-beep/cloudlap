@@ -137,7 +137,8 @@ Claim your free static domain at [dashboard.ngrok.com/domains](https://dashboard
 python launcher.pyw
 ```
 
-Click START. The server and tunnel launch together.
+Click **Start CloudLap**. The window shows live status for the server, tunnel and authenticator lock,
+warns you if setup is incomplete, copies your connector address, and can start CloudLap at sign-in.
 
 **CLI mode:**
 
@@ -206,7 +207,7 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting and hardening recomme
 ```
 cloudlap/
 ├── server.py              MCP server with 10 tools
-├── launcher.pyw           GUI application (tkinter)
+├── launcher.pyw           Desktop window (status, start/stop, copy address)
 ├── config.example.json    Configuration template
 ├── requirements.txt       Python dependencies
 ├── setup.bat              Windows installer script

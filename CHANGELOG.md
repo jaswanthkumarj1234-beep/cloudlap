@@ -8,6 +8,7 @@ All notable changes to CloudLap are documented here.
 - Two-factor unlock: tools stay locked until `unlock` is called with a code from an authenticator app (`totp.py`, `totp_setup.py`)
 - `SETUP.md`: step-by-step setup guide including the authenticator step
 - `setup_wizard.py`: one guided setup (requirements, authenticator QR with code check, ngrok, auto-start); `setup.bat` now runs it
+- Redesigned launcher window: live Server / Tunnel / Authenticator status, setup warnings, copy address, auto-start switch, recent tool activity (arguments are never shown)
 - Server logs a loud warning at startup when no authenticator lock is set up
 
 ### Features
