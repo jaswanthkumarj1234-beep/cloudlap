@@ -7,8 +7,8 @@ Contributions that address any of these are welcome.
 | Limitation | Impact | Mitigation |
 |---|---|---|
 | The host computer is a single point of failure (sleep, lid close, battery, power cut) | Every tool fails with an execution error until the machine is back | Set sleep/hibernate to "never" while in use; keep the machine plugged in; set the lid action to "do nothing" |
-| Nothing starts the server or tunnel at login | After a reboot or Windows update the lab stays offline | Add a Startup-folder shortcut or service for the server and tunnel; consider auto sign-in |
-| No watchdog | If the server or tunnel crashes it is not restarted | Run a small supervisor loop that relaunches either process |
+| Nothing starts the server or tunnel at login | After a reboot or Windows update the lab stays offline | Run `watchdog.ps1` hidden from the Startup folder (usage is in its header); consider Windows auto sign-in |
+| No built-in supervisor | If the server or tunnel crashes it is not restarted | Use `watchdog.ps1`, which relaunches either process if it stops. It checks that the process or port is present, not that it is healthy |
 | The tunnel is a hard dependency (ngrok/cloudflared) | Free tiers can rotate URLs, add interstitial pages, or rate limit | Use a reserved/static domain or a named Cloudflare tunnel |
 | Low-RAM hosts | Heavy commands can fail or stall the whole machine | Run one heavy job at a time; monitor with `get_system_info` |
 
@@ -29,7 +29,8 @@ Contributions that address any of these are welcome.
 | Limitation | Impact | Mitigation |
 |---|---|---|
 | The command filter is a blocklist | Blocklists can be bypassed (for example a blocked command's equivalent in another shell) | Prefer the directory sandbox and an allowlist for sensitive deployments |
-| Remote command execution is reachable over a public URL | Anyone with the URL and credentials has the same access as the owner | Keep the token secret; rotate it; restrict the tunnel with IP or OAuth rules where the provider supports it |
+| The MCP endpoint has no authentication of its own | Anyone who knows the tunnel URL has the same access as the owner, including `run_command`. Verified: an unauthenticated `initialize` request returns HTTP 200 | Treat the URL as a secret and never share or screenshot it; add ngrok IP restrictions or OAuth in front of the tunnel; token or OAuth support in the server is future work |
+| The server listens on all interfaces (`0.0.0.0`) | Other devices on the same network can reach it directly and bypass the tunnel | Block the port from the LAN with a firewall rule. Binding to `127.0.0.1` alone is not enough today: the MCP SDK's host check then answers HTTP 421 to requests that carry the tunnel's hostname, so the allowed hosts must be configured as well |
 | The audit log is local and not tamper-evident | The same tools that run commands could edit the log | Ship the log to a separate location or append-only store |
 | Sensitive-path blocking is name based | Unusual locations for secrets are not covered | Add custom patterns to the config |
 | No account separation | Every account connected to the same server sees the same memory | Treat one server as one trust domain |

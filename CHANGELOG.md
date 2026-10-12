@@ -5,12 +5,14 @@ All notable changes to CloudLap are documented here.
 ## [Unreleased]
 
 ### Features
+- `watchdog.ps1`: keeps the server and ngrok tunnel running, single instance, rolling `watchdog.log`; start it hidden at login
 - Automatic activity log: state-changing `write_file` and `run_command` calls are recorded in `memory/activity_log.md` (last 200 lines) and appended to `load_context` output
 - Session nudge: the first tool call of a new session (or after 30 idle minutes) is followed by a reminder listing saved projects and telling the model to call `load_context`
 
 ### Documentation
 - Added `docs/CONTEXT_SYSTEM.md` (resuming work across chats and accounts)
 - Added `docs/KNOWN_LIMITATIONS.md` (availability, context, security and functional limits, with mitigations)
+- Documented that the MCP endpoint has no authentication of its own and that the server listens on `0.0.0.0` (see `docs/KNOWN_LIMITATIONS.md`)
 
 ## [1.1.0] - 2026-10-12
 
