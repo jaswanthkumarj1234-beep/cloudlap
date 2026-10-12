@@ -972,6 +972,11 @@ async def list_projects() -> str:
 # Server Execution
 # ---------------------------------------------------------
 if __name__ == "__main__":
+    if not _auth_enabled():
+        logger.warning(
+            "NO AUTHENTICATOR LOCK IS SET UP. Anyone with your tunnel URL can use every tool. "
+            "Run: python totp_setup.py --show-qr (or python setup_wizard.py)"
+        )
     logger.info("Starting Remote MCP Server on 0.0.0.0:%d (streamable-http)...", server_port)
     mcp.run(transport="streamable-http", host="0.0.0.0", port=server_port)
 

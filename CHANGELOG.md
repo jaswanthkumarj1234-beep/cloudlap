@@ -7,6 +7,8 @@ All notable changes to CloudLap are documented here.
 ### Added
 - Two-factor unlock: tools stay locked until `unlock` is called with a code from an authenticator app (`totp.py`, `totp_setup.py`)
 - `SETUP.md`: step-by-step setup guide including the authenticator step
+- `setup_wizard.py`: one guided setup (requirements, authenticator QR with code check, ngrok, auto-start); `setup.bat` now runs it
+- Server logs a loud warning at startup when no authenticator lock is set up
 
 ### Features
 - `watchdog.ps1`: keeps the server and ngrok tunnel running, single instance, rolling `watchdog.log`; start it hidden at login. It also asks Windows not to sleep while it runs; set `"keep_display_on": true` in `config.json` to keep the screen on as well

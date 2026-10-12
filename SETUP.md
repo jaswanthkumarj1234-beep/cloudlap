@@ -4,6 +4,18 @@ This guide takes you from a fresh laptop to a working, locked-down CloudLap in a
 You do not need Claude to install or run the server. You need Claude only to *use* it, because
 Claude is the client that connects to your laptop.
 
+## Quick start (recommended)
+
+1. Install [Python 3.10+](https://python.org/downloads) and tick **Add Python to PATH**.
+2. On the GitHub page click **Code > Download ZIP**, unzip it, and double-click **`setup.bat`**.
+3. Answer the questions. The wizard installs everything, shows a QR code for your authenticator app,
+   sets up ngrok, starts CloudLap, and tells you the address to paste into Claude.
+
+Have these ready: a phone with an authenticator app, and a free [ngrok](https://ngrok.com) account
+(you will copy an authtoken and create a free static domain). The wizard walks you through both.
+
+The rest of this guide explains each step in detail, for anyone who prefers to do it by hand.
+
 ## What you need
 
 - Windows 10 or 11
