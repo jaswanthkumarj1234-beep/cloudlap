@@ -1,69 +1,52 @@
-# Contributing to CloudLap
+# Contributing
 
-Thanks for your interest in contributing to CloudLap! 🎉
-
-## Quick Start
-
-1. Fork the repo
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/cloudlap.git`
-3. Create a branch: `git checkout -b feature/my-feature`
-4. Make your changes
-5. Run tests: `python -m pytest tests/ -v`
-6. Commit: `git commit -m "feat: add my feature"`
-7. Push: `git push origin feature/my-feature`
-8. Open a Pull Request
+Thanks for your interest in contributing to CloudLap.
 
 ## Development Setup
 
 ```bash
-# Install dependencies
+git clone https://github.com/YOUR_USERNAME/cloudlap.git
+cd cloudlap
 pip install -r requirements.txt
 pip install pytest
 
-# Copy config
 copy config.example.json config.json
 # Edit config.json with your ngrok domain
 
-# Run server locally
-python server.py
-
-# Run tests
-python -m pytest tests/ -v
+python server.py          # Run server
+python -m pytest tests/ -v  # Run tests
 ```
 
-## Commit Convention
+## Commit Messages
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-| Prefix | Use For |
-|--------|---------|
-| `feat:` | New features |
-| `fix:` | Bug fixes |
-| `docs:` | Documentation changes |
-| `test:` | Adding/updating tests |
-| `refactor:` | Code restructuring |
-| `security:` | Security improvements |
+- `feat:` — new features
+- `fix:` — bug fixes
+- `docs:` — documentation
+- `test:` — test changes
+- `security:` — security improvements
 
-## What We Need Help With
+## Pull Request Process
 
-- 🍎 **macOS / Linux support** — test and fix platform-specific code
-- 🐳 **Docker** — containerized deployment option
-- 🌐 **Web Dashboard** — browser-based control panel
-- 🔐 **OAuth** — proper authentication for the MCP endpoint
-- 📱 **Mobile** — better experience on phone browsers
-- 🧪 **Tests** — more edge cases and integration tests
+1. Fork and clone the repo
+2. Create a branch: `git checkout -b feature/my-feature`
+3. Make changes and add tests
+4. Run `python -m pytest tests/ -v` — all tests must pass
+5. Commit, push, and open a PR
 
-## Security
+## Areas Where Help Is Needed
 
-If you find a security vulnerability, **do NOT open a public issue**. Email the maintainer or use GitHub's private vulnerability reporting. See [SECURITY.md](SECURITY.md).
+- macOS and Linux support
+- Docker deployment
+- Web dashboard UI
+- OAuth authentication
+- More test coverage
 
-## Code Style
+## Security Vulnerabilities
 
-- Python 3.10+ with type hints
-- Async/await for all tool handlers
-- Docstrings on all public functions
-- Keep security checks in every file-access tool
+Do not open a public issue. See [SECURITY.md](SECURITY.md).
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your work will be licensed under the MIT License.

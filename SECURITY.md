@@ -2,40 +2,40 @@
 
 ## Supported Versions
 
-| Version | Supported |
-|---------|-----------|
-| 1.x     | ✅ Active |
+| Version | Status |
+|---------|--------|
+| 1.x     | Supported |
 
-## ⚠️ Important Security Note
+## Important
 
-CloudLap gives Claude AI **direct access to your computer** — it can run commands, read/write files, and access system information. This is by design, but it means:
+CloudLap gives Claude AI direct access to your computer. It can run commands, read and write files, and access system information. This is by design, but it means:
 
-- **Keep your ngrok URL private.** Anyone with your URL can control your machine.
-- **Don't run CloudLap on production servers.** It's designed for personal development machines.
-- **Review the command blocklist** in `server.py` and customize it for your needs.
+- Keep your ngrok URL private. Anyone with the URL has access.
+- Do not run CloudLap on production servers.
+- Review the command blocklist in `server.py` and customize it for your needs.
 
-## Built-in Security Features
+## Built-in Protections
 
-- **Command Blocklist** — 12+ regex patterns blocking dangerous commands (`rm -rf`, `format`, `shutdown`, registry edits, encoded commands, etc.)
-- **Directory Sandbox** — Configurable `allowed_directories` restricts file access
-- **Sensitive Path Blocking** — `.ssh`, `.env`, `.aws`, credentials files are always blocked
-- **Rate Limiting** — 30 calls/minute to prevent abuse
-- **Audit Log** — Every tool call logged to `audit_log.jsonl`
-- **Command Timeout** — 120-second kill switch for runaway processes
+- **Command blocklist** — 12+ regex patterns blocking destructive commands
+- **Directory sandbox** — configurable `allowed_directories` in config
+- **Sensitive path blocking** — `.ssh`, `.env`, `.aws`, credentials always denied
+- **Rate limiting** — 30 calls/minute
+- **Audit log** — every tool call recorded to `audit_log.jsonl`
+- **Timeout** — commands killed after 120 seconds
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability:
+If you discover a security issue:
 
-1. **DO NOT** open a public GitHub issue
-2. Go to the [Security tab](../../security/advisories/new) → "Report a vulnerability"
-3. Or email the maintainer directly
+1. Do **not** open a public issue.
+2. Use GitHub's [private vulnerability reporting](../../security/advisories/new).
+3. Or contact the maintainer directly.
 
-I'll respond within 48 hours and work on a fix.
+Response time: within 48 hours.
 
-## Hardening Recommendations
+## Hardening
 
-For extra security beyond defaults:
+Restrict access to only the directories you need:
 
 ```json
 {
@@ -44,7 +44,4 @@ For extra security beyond defaults:
 }
 ```
 
-- Restrict `allowed_directories` to only the folders you need
-- Lower the timeout for faster kill on bad commands
-- Use ngrok's built-in auth features for URL protection
-- Run CloudLap in a VM or container for full isolation
+Consider using [ngrok IP restrictions](https://ngrok.com/docs/http/ip-restrictions/) for additional protection.
