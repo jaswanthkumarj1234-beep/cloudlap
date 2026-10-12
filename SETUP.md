@@ -10,6 +10,7 @@ Claude is the client that connects to your laptop.
 2. On the GitHub page click **Code > Download ZIP**, unzip it, and double-click **`setup.bat`**.
 3. Answer the questions. The wizard installs everything, shows a QR code for your authenticator app,
    sets up ngrok, starts CloudLap, and tells you the address to paste into Claude.
+   If Windows shows "Windows protected your PC" for `setup.bat`, click **More info > Run anyway**.
 
 Have these ready: a phone with an authenticator app, and a free [ngrok](https://ngrok.com) account
 (you will copy an authtoken and create a free static domain). The wizard walks you through both.
@@ -101,6 +102,21 @@ Restart the server after editing `config.json`. A restart also locks it again.
 If the laptop sleeps, CloudLap is unreachable. On a laptop, closing the lid usually triggers sleep.
 Either leave the lid open, or in Control Panel > Power Options > *Choose what closing the lid does*,
 set it to **Do nothing**. Also set sleep to **Never** while plugged in.
+
+## Using more than one computer, or your phone
+
+- **Each computer is separate.** Each one has its own authenticator secret, its own ngrok domain and its own
+  connector address.
+- **A free ngrok domain works on one computer at a time.** For a second computer, create a separate ngrok
+  account (a different email) and use its domain. If you reuse the same domain, the tunnel on the other
+  computer is disconnected or the new one refuses to start.
+- **Name each connector clearly** in Claude, for example "CloudLap Home" and "CloudLap Work", and tell Claude
+  which one to use.
+- **Phone:** add the connector in Claude on the web or desktop (Settings > Connectors). Connectors belong to your
+  Claude account, so they should also show up in the Claude app on your phone when you are signed in to the same
+  account. If they do not, check that your plan supports custom connectors.
+- **Codes come from your authenticator app**, not from the computer. Any time you want to unlock, open the app,
+  read the 6-digit code and type it into the chat.
 
 ## Troubleshooting
 

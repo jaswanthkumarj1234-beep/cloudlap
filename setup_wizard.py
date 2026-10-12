@@ -142,6 +142,9 @@ def main() -> None:
     print("ngrok found")
     print("\n1. Sign in at https://dashboard.ngrok.com and copy your authtoken (Your Authtoken page).")
     print("2. Open Domains, create your free static domain, and copy it (looks like name.ngrok-free.dev).")
+    print("\nNote: a free ngrok domain can only be used by ONE computer at a time. If CloudLap already")
+    print("runs on another computer, use a separate ngrok account (a different email) for this one,")
+    print("or stop the other computer first.")
     token = ask("\nPaste your ngrok authtoken (or press Enter if you already added it)")
     if token:
         if run([ngrok, "config", "add-authtoken", token]) != 0:
