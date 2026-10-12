@@ -226,6 +226,72 @@ def _nudged(fn):
     return wrapper
 
 
+# ---------------------------------------------------------
+# Two-factor lock (TOTP). Enabled when config has "totp_secret".
+# Tools stay locked until the owner calls `unlock` with the 6-digit code
+# from an authenticator app. Unlock state lives in memory only, so a
+# restart locks everything again.
+# ---------------------------------------------------------
+import time as _time
+import totp as _totp
+
+_AUTH = {"unlocked_until": 0.0, "locked_until": 0.0, "last_counter": -1, "fails": []}
+_FAIL_WINDOW_S = 15 * 60
+
+
+def _auth_enabled() -> bool:
+    return bool(config.get("totp_secret"))
+
+
+def _auth_gate() -> Optional[str]:
+    """Return a refusal message if the server is locked, else None."""
+    if not _auth_enabled():
+        return None
+    if _time.time() < _AUTH["unlocked_until"]:
+        return None
+    return (
+        "CloudLap is locked. Ask the owner for the current 6-digit code from their "
+        "authenticator app, then call the `unlock` tool with it."
+    )
+
+
+def _gated(fn):
+    """Decorator: refuse the tool while the server is locked."""
+    @_functools.wraps(fn)
+    async def wrapper(*args, **kwargs):
+        msg = _auth_gate()
+        if msg:
+            audit_log(fn.__name__, {}, "LOCKED", "refused: not unlocked")
+            return msg
+        return await fn(*args, **kwargs)
+    return wrapper
+
+
+def _try_unlock(code: str) -> str:
+    if not _auth_enabled():
+        return "Two-factor lock is not configured on this server."
+    now = _time.time()
+    if now < _AUTH["locked_until"]:
+        mins = int((_AUTH["locked_until"] - now) // 60) + 1
+        return f"Too many wrong codes. Locked out for about {mins} more minute(s)."
+    counter = _totp.verify(str(config["totp_secret"]), code, t=now)
+    if counter is None or counter <= _AUTH["last_counter"]:
+        _AUTH["fails"] = [t for t in _AUTH["fails"] if now - t < _FAIL_WINDOW_S] + [now]
+        max_fails = int(config.get("max_unlock_failures", 3))
+        audit_log("unlock", {}, "FAILED", f"{len(_AUTH['fails'])} recent failure(s)")
+        if len(_AUTH["fails"]) >= max_fails:
+            _AUTH["locked_until"] = now + _FAIL_WINDOW_S
+            _AUTH["fails"] = []
+            return "Wrong code. Too many failures: locked out for 15 minutes."
+        return "Wrong or already used code."
+    _AUTH["last_counter"] = counter
+    _AUTH["fails"] = []
+    minutes = int(config.get("unlock_minutes", 10))
+    _AUTH["unlocked_until"] = now + minutes * 60
+    audit_log("unlock", {}, "OK", f"unlocked for {minutes} min")
+    return f"Unlocked for {minutes} minutes."
+
+
 _rate_log: list[float] = []
 RATE_LIMIT = 30  # max calls per minute
 
@@ -304,6 +370,25 @@ mcp = MCPServer("CloudLap", instructions=_instructions)
 
 
 @mcp.tool()
+async def unlock(code: str) -> str:
+    """Unlock the server with the 6-digit code from the owner's authenticator app.
+
+    Until unlocked, every tool except get_system_info and unlock refuses to run.
+    The unlock lasts a few minutes and is cleared by a server restart.
+    """
+    return _try_unlock(code)
+
+
+@mcp.tool()
+async def lock() -> str:
+    """Lock the server again right away."""
+    _AUTH["unlocked_until"] = 0.0
+    audit_log("lock", {}, "OK", "locked by request")
+    return "Locked."
+
+
+@mcp.tool()
+@_gated
 @_nudged
 async def run_command(command: str, cwd: str = "") -> str:
     """Execute a shell command with security validation and timeout.
@@ -407,6 +492,7 @@ async def run_command(command: str, cwd: str = "") -> str:
 
 
 @mcp.tool()
+@_gated
 @_nudged
 async def read_file(path: str) -> str:
     """Read a file's contents up to 100KB with truncation warning.
@@ -456,6 +542,7 @@ async def read_file(path: str) -> str:
 
 
 @mcp.tool()
+@_gated
 @_nudged
 async def write_file(path: str, content: str) -> str:
     """Write or overwrite a file with given content, creating parent directories if needed.
@@ -496,6 +583,7 @@ async def write_file(path: str, content: str) -> str:
 
 
 @mcp.tool()
+@_gated
 @_nudged
 async def list_directory(path: str = "") -> str:
     """List directory contents with sizes and modification timestamps.
@@ -557,6 +645,7 @@ async def list_directory(path: str = "") -> str:
 
 
 @mcp.tool()
+@_gated
 @_nudged
 async def search_files(pattern: str, directory: str = "") -> str:
     """Search for files matching a glob pattern recursively.
@@ -719,6 +808,7 @@ PROJECTS_FILE = MEMORY_DIR / "projects.md"
 
 
 @mcp.tool()
+@_gated
 async def save_context(
     summary: str,
     current_task: str = "",
@@ -779,6 +869,7 @@ _Last updated: {timestamp}_
 
 
 @mcp.tool()
+@_gated
 async def load_context(project_name: str = "default") -> str:
     """Load the saved context from a previous session. Use this at the start of a new
     session to restore full context about what was previously done.
@@ -818,6 +909,7 @@ async def load_context(project_name: str = "default") -> str:
 
 
 @mcp.tool()
+@_gated
 async def append_memory(note: str, category: str = "general") -> str:
     """Save a quick note or piece of information to persistent memory.
     Use this to remember user preferences, important decisions, or anything
@@ -844,6 +936,7 @@ async def append_memory(note: str, category: str = "general") -> str:
 
 
 @mcp.tool()
+@_gated
 @_nudged
 async def list_projects() -> str:
     """List all projects that have saved context."""
