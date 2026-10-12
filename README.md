@@ -1,12 +1,13 @@
 ## Download and install (no coding needed)
 
-1. Click the green **Code** button at the top of this page, then **Download ZIP**.
-2. Open the ZIP and drag the folder anywhere, for example your Desktop.
-3. Double-click **Start CloudLap.bat**. A window opens and guides you through setup.
+**[Download CloudLap for Windows](https://github.com/jaswanthkumarj1234-beep/cloudlap/releases/latest/download/CloudLap-Setup.exe)**
 
-That is all. Windows may show a blue SmartScreen box: click **More info**, then **Run anyway**.
-No typing commands and no pasting into a terminal. Everything else below is for developers.
+1. Click the link above and open the downloaded **CloudLap-Setup.exe**.
+2. Click **Next**, then **Install**. It adds CloudLap to your Start menu.
+3. A setup window opens and guides you: authenticator (Google or Microsoft), your ngrok address, and how long each unlock lasts (10, 20, 30 or 60 minutes). Then connect it to Claude.
 
+Windows may show a blue SmartScreen box: click **More info**, then **Run anyway**.
+No typing commands and no pasting into a terminal. Everything below is for developers.
 ---
 
 <div align="center">

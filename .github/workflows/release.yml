@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Inno Setup
+      shell: pwsh
+      run: choco install innosetup -y --no-progress
+
+    - name: Build installer
+      shell: pwsh
+      run: |
+        $v = "${{ github.ref_name }}".TrimStart('v')
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$v" CloudLap.iss
+        Get-ChildItem dist
+
+    - name: Publish release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/CloudLap-Setup.exe
+        generate_release_notes: true

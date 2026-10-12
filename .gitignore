@@ -41,3 +41,5 @@ secrets*
 tokens*
 .pytest_cache/
 *.bak
+
+dist/

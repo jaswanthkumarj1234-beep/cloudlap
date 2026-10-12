@@ -250,7 +250,7 @@ class Wizard(tk.Tk):
     def page_3(self):
         self.label("Almost there. Two simple choices:", pad=(10, 6))
         self.label("How long should one unlock last? (shorter is safer)")
-        box = ttk.Combobox(self.body, textvariable=self.minutes, values=["10", "30", "60"], width=8,
+        box = ttk.Combobox(self.body, textvariable=self.minutes, values=["10", "20", "30", "60"], width=8,
                            state="readonly", font=("Segoe UI", 11))
         box.pack(anchor="w", padx=18, pady=(0, 2))
         self.label("minutes", size=9, color=MUTED, pad=(0, 10))
