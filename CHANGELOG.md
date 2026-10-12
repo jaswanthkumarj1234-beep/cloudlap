@@ -2,6 +2,15 @@
 
 All notable changes to CloudLap are documented here.
 
+## [Unreleased]
+
+### Features
+- Automatic activity log: state-changing `write_file` and `run_command` calls are recorded in `memory/activity_log.md` (last 200 lines) and appended to `load_context` output
+
+### Documentation
+- Added `docs/CONTEXT_SYSTEM.md` (resuming work across chats and accounts)
+- Added `docs/KNOWN_LIMITATIONS.md` (availability, context, security and functional limits, with mitigations)
+
 ## [1.1.0] - 2026-10-12
 
 ### 🛡️ Security

@@ -119,6 +119,57 @@ def audit_log(tool_name: str, args: dict, status: str, detail: str = ""):
             f.write(json.dumps(entry) + "\n")
     except Exception:
         pass  # never let audit logging break the server
+    _activity(tool_name, args, status)
+
+
+# ---------------------------------------------------------
+# Activity log - tiny, automatic, self-trimming (for context hand-off)
+# ---------------------------------------------------------
+ACTIVITY_LOG_PATH = Path(__file__).resolve().parent / "memory" / "activity_log.md"
+ACTIVITY_MAX_LINES = 200
+_ACTION_RE = re.compile(
+    r"(?i)\b(start|taskkill|stop-process|remove-item|del|rd|rmdir|set-content|add-content|"
+    r"copy-item|copy|move-item|move|rename|new-item|mkdir|pip|npm|winget|python|pythonw|"
+    r"explorer|set-clipboard|out-file|git)\b"
+)
+
+
+def _activity(tool_name: str, args: dict, status: str):
+    """Append one short line for state-changing actions only. Never raises."""
+    try:
+        if status != "OK":
+            return
+        if tool_name == "write_file":
+            text = "write_file: " + str(args.get("path", ""))
+        elif tool_name == "run_command":
+            cmd = " ".join(str(args.get("command", "")).split())
+            if not _ACTION_RE.search(cmd):
+                return
+            text = "run_command: " + cmd
+        else:
+            return
+        line = datetime.datetime.now().strftime("%m-%d %H:%M") + " " + text[:120]
+        ACTIVITY_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        lines = []
+        if ACTIVITY_LOG_PATH.exists():
+            lines = ACTIVITY_LOG_PATH.read_text(encoding="utf-8").splitlines()
+        lines.append(line)
+        ACTIVITY_LOG_PATH.write_text("\n".join(lines[-ACTIVITY_MAX_LINES:]) + "\n", encoding="utf-8")
+    except Exception:
+        pass  # never let activity logging break the server
+
+
+def _activity_section(n: int = 20) -> str:
+    """Last n activity lines, formatted for load_context output."""
+    try:
+        if not ACTIVITY_LOG_PATH.exists():
+            return ""
+        lines = ACTIVITY_LOG_PATH.read_text(encoding="utf-8").splitlines()[-n:]
+        if not lines:
+            return ""
+        return "\n\n## Recent Activity (auto-logged, newest last)\n" + "\n".join(lines)
+    except Exception:
+        return ""
 
 
 # ---------------------------------------------------------
@@ -690,9 +741,9 @@ async def load_context(project_name: str = "default") -> str:
             return (
                 f"No context found for project '{project_name}'.\n"
                 f"Available projects: {', '.join(names)}\n"
-                f"Try: load_context(project_name='...')"
+                f"Try: load_context(project_name='...')" + _activity_section()
             )
-        return "No saved context found. This appears to be a fresh start!"
+        return "No saved context found. This appears to be a fresh start!" + _activity_section()
 
     context = project_context.read_text(encoding="utf-8")
 
@@ -706,7 +757,7 @@ async def load_context(project_name: str = "default") -> str:
         else:
             recent_log = "\n\n## Full Session History\n" + log_content
 
-    return context + recent_log
+    return context + recent_log + _activity_section()
 
 
 @mcp.tool()
