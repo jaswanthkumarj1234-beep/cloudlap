@@ -29,3 +29,15 @@ test_*.txt
 config.json
 
 audit_log.jsonl
+
+config.yml
+*.jsonl
+.env
+.env.*
+*.pem
+*.key
+credentials*
+secrets*
+tokens*
+.pytest_cache/
+*.bak

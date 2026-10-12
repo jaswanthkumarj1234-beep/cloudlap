@@ -2,209 +2,226 @@
 
 # ☁️ CloudLap
 
-### Turn your laptop into a personal cloud. Connect Claude AI from anywhere.
+### Your laptop is your cloud. Control it from anywhere with Claude AI.
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io)
 [![CI](https://github.com/jaswanthkumarj1234-beep/cloudlap/actions/workflows/ci.yml/badge.svg)](https://github.com/jaswanthkumarj1234-beep/cloudlap/actions)
-[![Tests](https://img.shields.io/badge/Tests-26%20passed-brightgreen.svg)](tests/)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-8B5CF6?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PHRleHQgeT0iMTgiIGZvbnQtc2l6ZT0iMTgiPjwvdGV4dD48L3N2Zz4=)](https://modelcontextprotocol.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22C55E)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-26_passed-22C55E)](tests/)
+[![Security](https://img.shields.io/badge/Security-Hardened-22C55E)](SECURITY.md)
 
-**Free • No API Keys • Works from Phone • Your Data Stays on Your Machine**
+**Free** · **No API keys** · **Works from phone** · **Your data stays on your machine**
 
-[Quick Start](#-quick-start) • [How It Works](#-how-it-works) • [Features](#-features) • [Security](#-security)
-
-</div>
+[Quick Start](#-quick-start) · [Features](#-features) · [Security](#-security-built-to-fix-openclaws-mistakes) · [Contributing](#-contributing)
 
 ---
 
+</div>
+
 ## 🤯 What is CloudLap?
 
-CloudLap turns your laptop into a **free, personal cloud** that Claude AI can access from **anywhere** — your phone, a friend's laptop, a tablet, anything with a browser.
+CloudLap turns your laptop into a **free, personal cloud** that Claude AI can control from **anywhere** — your phone, a friend's laptop, a coffee shop tablet. It uses [Model Context Protocol (MCP)](https://modelcontextprotocol.io) to give Claude direct, secure access to your machine.
 
-It's like having your own **Cowork / Replit / GitHub Codespaces** — but running on YOUR machine, for FREE.
+**Think of it as your own free Cowork / Replit / Codespaces — running on YOUR hardware.**
 
 ```
-Your Phone (anywhere)          Your Laptop (at home)
-┌─────────────────────┐       ┌──────────────────────┐
-│  Claude AI           │──────│  CloudLap Server      │
-│  "Create a React app"│ MCP  │  → runs npm create    │
-│                      │──────│  → creates files      │
-│  "Fix the bug"       │      │  → reads error logs   │
-│                      │      │  → fixes code         │
-└─────────────────────┘       └──────────────────────┘
-     Uses Claude's               Your laptop does
-     built-in connector           all the work
+  Your Phone (anywhere)              Your Laptop (at home)
+ ┌────────────────────────┐        ┌────────────────────────┐
+ │  Claude AI              │───────│  CloudLap Server        │
+ │                         │  MCP  │                         │
+ │  "Create a React app"   │◄──────│  → runs npm create      │
+ │  "Fix the bug on L42"   │       │  → reads error logs     │
+ │  "Deploy to Vercel"     │       │  → pushes to git        │
+ └────────────────────────┘        └────────────────────────┘
+      You use Claude's                 Your laptop does
+      built-in connector               all the heavy lifting
 ```
 
 ## ✨ Features
 
-| Feature | Description |
-|---|---|
-| 🔧 **Run Commands** | Execute any shell command on your laptop from Claude |
-| 📄 **Read Files** | Read any file on your machine |
-| ✏️ **Write Files** | Create and edit files remotely |
-| 📂 **Browse Files** | List and explore your directories |
-| 🔍 **Search Files** | Find files by name pattern across your machine |
-| 💻 **System Info** | Check CPU, RAM, disk, OS info |
-| 🧠 **Persistent Memory** | Context survives across sessions and accounts |
-| 📋 **Save/Load Context** | Switch Claude accounts without losing progress |
-| 🔐 **Security Blocklist** | Dangerous commands are automatically blocked |
-| 🌐 **Permanent URL** | Same URL every time — set up Claude connector once |
-| 📱 **Works Everywhere** | Phone, tablet, friend's laptop — any browser |
-| 💰 **100% Free** | No API keys, no subscriptions, no cloud costs |
+| | Feature | Description |
+|---|---|---|
+| 🔧 | **Run Commands** | Execute any shell command — build, test, deploy |
+| 📄 | **Read Files** | Read any file on your machine (up to 100KB) |
+| ✏️ | **Write Files** | Create and edit files, auto-create directories |
+| 📂 | **Browse Files** | List and explore directories with sizes and dates |
+| 🔍 | **Search Files** | Find files by pattern across your entire machine |
+| 💻 | **System Info** | Live CPU, RAM, disk, OS, battery stats |
+| 🧠 | **Persistent Memory** | Context survives across sessions and accounts |
+| 📋 | **Save/Load Context** | Switch Claude accounts without losing progress |
+| 🛡️ | **Security Hardened** | Audit log, rate limiting, directory sandbox, command blocklist |
+| 🌐 | **Permanent URL** | Same URL forever — configure Claude connector once |
+| 📱 | **Works Everywhere** | Phone, tablet, any browser, any device |
+| 💰 | **100% Free** | No API keys, no subscriptions, zero cloud costs |
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Windows 10/11** (macOS/Linux coming soon)
-- **Python 3.10+** ([Download](https://python.org/downloads) — check "Add to PATH")
-- **Free ngrok account** ([Sign up](https://dashboard.ngrok.com/signup) — 30 seconds)
 
-### Step 1: Clone & Install
+- **Windows 10/11** (macOS/Linux support planned — [help wanted!](../../issues))
+- **Python 3.10+** — [Download](https://python.org/downloads) (check "Add to PATH")
+- **Free ngrok account** — [Sign up](https://dashboard.ngrok.com/signup) (30 seconds)
+
+### 1. Clone & Install
+
 ```bash
 git clone https://github.com/jaswanthkumarj1234-beep/cloudlap.git
 cd cloudlap
 pip install -r requirements.txt
 ```
 
-### Step 2: Set up ngrok (one time)
+### 2. Set Up ngrok (one time)
+
 ```bash
 # Install ngrok
 winget install ngrok.ngrok
 
 # Add your auth token (from https://dashboard.ngrok.com/get-started/your-authtoken)
-ngrok config add-authtoken YOUR_TOKEN_HERE
+ngrok config add-authtoken YOUR_TOKEN
 
-# Get your free static domain (from https://dashboard.ngrok.com/domains)
-# You'll get something like: your-name.ngrok-free.dev
+# Claim your free static domain at https://dashboard.ngrok.com/domains
+# You'll get something like: cool-name-here.ngrok-free.dev
 ```
 
-### Step 3: Configure
+### 3. Configure
+
 ```bash
-# Copy the example config
 copy config.example.json config.json
-
-# Edit config.json and set your ngrok domain:
 ```
+
+Edit `config.json` — set your ngrok domain:
+
 ```json
 {
-  "ngrok_domain": "your-name.ngrok-free.dev"
+  "ngrok_domain": "cool-name-here.ngrok-free.dev"
 }
 ```
 
-### Step 4: Start
-```bash
-# Option A: GUI App
-python launcher.pyw
-# Click START
+### 4. Launch
 
-# Option B: Command line
+```bash
+# GUI mode (recommended)
+python launcher.pyw
+
+# CLI mode
 python server.py
 # In another terminal:
-ngrok http --url=your-name.ngrok-free.dev 8787
+ngrok http --url=cool-name-here.ngrok-free.dev 127.0.0.1:8787
 ```
 
-### Step 5: Connect Claude
-1. Open [Claude](https://claude.ai) or the Claude mobile app
-2. Go to **Settings** → **Connectors** → **Add Custom Connector**
+### 5. Connect Claude
+
+1. Open [claude.ai](https://claude.ai) (or Claude mobile app)
+2. **Settings** → **Connectors** → **Add Custom Connector**
 3. Name: `CloudLap`
-4. URL: `https://your-name.ngrok-free.dev/mcp`
-5. Save!
-
-### Step 6: Chat! 🎉
-```
-You: "List the files on my Desktop"
-Claude: *uses your laptop's tools* → shows your actual files
-
-You: "Create a React portfolio site"
-Claude: *runs commands on your laptop* → builds the entire project
-```
-
-## 🔄 Persistent Memory (Switch Accounts Without Losing Context)
-
-CloudLap saves context to your laptop, so you can switch Claude accounts and keep your progress:
+4. URL: `https://cool-name-here.ngrok-free.dev/mcp`
+5. Done! Start chatting. 🎉
 
 ```
-Account 1: "Save our context"
-→ Claude saves everything to your laptop
+You: "Create a Python web scraper and save it to my Desktop"
+Claude: *creates the file on your actual Desktop*
 
-*switch to Account 2*
-
-Account 2: "Load my context"
-→ Claude reads saved context → continues exactly where you left off
+You: "Run it and show me the results"
+Claude: *executes the script on your laptop, returns output*
 ```
 
-Tools: `save_context`, `load_context`, `append_memory`, `list_projects`
+## 🔄 Persistent Memory
+
+CloudLap's killer feature: **context that survives across sessions and accounts.**
+
+```
+Account 1 (free tier limit hit):
+  You: "Save our context"
+  Claude: → saves everything to your laptop's memory/
+
+  *switch to Account 2*
+
+Account 2 (new session):
+  Claude: → auto-reads instructions → finds saved context
+  Claude: "I see we were building a portfolio site. Continuing..."
+```
+
+The server sends instructions to Claude on every connection telling it to check for saved context. It happens automatically.
+
+**Tools:** `save_context` · `load_context` · `append_memory` · `list_projects`
 
 ## 🛡️ Security (Built to Fix OpenClaw's Mistakes)
 
-CloudLap was designed with security lessons from OpenClaw's 500+ vulnerabilities:
+CloudLap was designed with security lessons from [OpenClaw's 500+ vulnerabilities](https://nvd.nist.gov/):
 
-| Vulnerability | OpenClaw | CloudLap |
+| Risk | OpenClaw | CloudLap |
 |---|---|---|
-| No audit trail | ❌ No logging | ✅ **Every tool call logged** to `audit_log.jsonl` |
-| No rate limiting | ❌ Unlimited abuse | ✅ **30 calls/minute** rate limiter |
-| Access to sensitive files | ❌ `.ssh`, `.env` exposed | ✅ **Sensitive paths blocked** automatically |
-| No directory sandbox | ❌ Full filesystem access | ✅ **Configurable `allowed_directories`** |
-| Dangerous commands | ❌ `rm -rf /` allowed | ✅ **12+ pattern blocklist** |
-| Runaway processes | ❌ No timeouts | ✅ **120-second timeout** |
+| No audit trail | ❌ Zero logging | ✅ **Every call logged** to `audit_log.jsonl` |
+| No rate limiting | ❌ Unlimited abuse | ✅ **30 calls/min** rate limiter |
+| Sensitive file access | ❌ `.ssh`, `.env` exposed | ✅ **Auto-blocked** always |
+| No directory sandbox | ❌ Full filesystem | ✅ **Configurable** `allowed_directories` |
+| Dangerous commands | ❌ `rm -rf /` allowed | ✅ **12+ pattern** blocklist |
+| Runaway processes | ❌ No timeouts | ✅ **120s timeout** kill switch |
 | Insecure defaults | ❌ Open by default | ✅ **Secure by default** |
-| No encryption | ❌ HTTP possible | ✅ **HTTPS only** (via ngrok) |
+| Malicious plugins | ❌ "Claw Chain" attack | ✅ **No plugin system** = no attack surface |
 
-Additional security:
-- ✅ **No open ports** — no firewall/router changes needed
-- ✅ **Your data stays on YOUR machine** — no cloud storage
-- ✅ **No plugins/skills system** — no attack surface for malicious extensions
+> ⚠️ **Your ngrok URL gives full access to your machine.** Keep it private. See [SECURITY.md](SECURITY.md) for hardening tips.
 
-> ⚠️ **Important:** Your ngrok URL is accessible to anyone who has it. Keep it private.
+## 🆚 CloudLap vs Paid Alternatives
+
+| Feature | Cowork (\$20/mo) | Replit (\$25/mo) | Codespaces (\$\$\$) | **CloudLap** |
+|---|:---:|:---:|:---:|:---:|
+| AI + Code Execution | ✅ | ✅ | ✅ | ✅ |
+| Access from Phone | ❌ | ✅ | ✅ | ✅ |
+| Uses YOUR Machine | ✅ | ❌ | ❌ | ✅ |
+| Persistent Memory | ❌ | ❌ | ❌ | ✅ |
+| Cross-account Context | ❌ | ❌ | ❌ | ✅ |
+| Audit Log | ❌ | ❌ | ✅ | ✅ |
+| **Cost** | \$240/yr | \$300/yr | \$\$\$ | **\$0** |
 
 ## 📁 Project Structure
 
 ```
 cloudlap/
-├── server.py           # MCP server (10 tools for Claude)
-├── launcher.pyw        # GUI app (click START to launch)
-├── config.json         # Settings (port, ngrok domain, timeouts)
-├── setup.bat           # One-click Windows installer
-├── start.bat           # CLI launcher (server + tunnel)
-├── requirements.txt    # Python dependencies
-├── LICENSE             # MIT License
-└── memory/             # Persistent context storage (created at runtime)
+├── server.py              # MCP server — 10 tools for Claude
+├── launcher.pyw           # GUI app — one-click START/STOP
+├── config.example.json    # Config template (copy to config.json)
+├── setup.bat              # One-click Windows installer
+├── start.bat              # CLI launcher (server + tunnel)
+├── requirements.txt       # Python dependencies
+├── tests/
+│   └── test_server.py     # 26 unit tests
+├── .github/
+│   ├── workflows/ci.yml   # CI pipeline (Python 3.10/3.11/3.12)
+│   └── ISSUE_TEMPLATE/    # Bug report & feature request templates
+├── CONTRIBUTING.md         # How to contribute
+├── SECURITY.md             # Security policy & hardening
+├── CHANGELOG.md            # Version history
+├── LICENSE                 # MIT
+└── memory/                 # Created at runtime — persistent context storage
 ```
-
-## 🆚 CloudLap vs Paid Alternatives
-
-| Feature | Cowork ($20/mo) | Replit ($25/mo) | Codespaces ($$$) | **CloudLap (Free)** |
-|---|---|---|---|---|
-| AI + Execution | ✅ | ✅ | ✅ | ✅ |
-| Access from Phone | ❌ | ✅ | ✅ | ✅ |
-| Uses YOUR Machine | ✅ | ❌ | ❌ | ✅ |
-| Persistent Memory | ❌ | ❌ | ❌ | ✅ |
-| Cross-account Context | ❌ | ❌ | ❌ | ✅ |
-| Cost | $240/yr | $300/yr | $$$ | **$0** |
 
 ## 🤝 Contributing
 
-Contributions welcome! Ideas:
-- [ ] macOS / Linux support
-- [ ] Docker sandboxing for safer command execution
-- [ ] Web dashboard UI
-- [ ] OAuth authentication
-- [ ] Multi-machine management
-- [ ] File upload/download from phone
-- [ ] Push notifications for command approval
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+**High-impact areas:**
+- [ ] 🍎 macOS / Linux support
+- [ ] 🐳 Docker containerized deployment
+- [ ] 🌐 Web-based dashboard UI
+- [ ] 🔐 OAuth / token authentication
+- [ ] 📊 Built-in analytics dashboard
+- [ ] 📱 Push notifications for command approval
+- [ ] 🖥️ Multi-machine management
 
 ## 📄 License
 
-MIT — do whatever you want with it.
+[MIT](LICENSE) — use it however you want.
 
 ---
 
 <div align="center">
 
-**If CloudLap saved you money, give it a ⭐**
+**If CloudLap helped you, give it a ⭐**
 
-[Report Bug](../../issues) • [Request Feature](../../issues) • [Discussions](../../discussions)
+It takes 1 second and helps others discover it.
+
+[Report Bug](../../issues/new?template=bug_report.md) · [Request Feature](../../issues/new?template=feature_request.md) · [Security](SECURITY.md)
 
 </div>
