@@ -6,6 +6,7 @@ All notable changes to CloudLap are documented here.
 
 ### Features
 - Automatic activity log: state-changing `write_file` and `run_command` calls are recorded in `memory/activity_log.md` (last 200 lines) and appended to `load_context` output
+- Session nudge: the first tool call of a new session (or after 30 idle minutes) is followed by a reminder listing saved projects and telling the model to call `load_context`
 
 ### Documentation
 - Added `docs/CONTEXT_SYSTEM.md` (resuming work across chats and accounts)

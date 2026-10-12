@@ -17,6 +17,13 @@ Any account that connects to the same server can load the same saved context.
 2. Say: "Load my context for default" (or name the project).
 3. Keep a `default` context that points to the active project, so a new chat is never empty.
 
+## Session nudge
+The server's startup instructions list saved projects, but that list is fixed when the server starts.
+To cover the gap, the first result of each new session (the first tool call, or any call after 30 idle
+minutes) is followed by a one-line reminder with the current list of saved projects and a prompt to call
+`load_context`. It is skipped when no context has been saved, and for `load_context` and `save_context`.
+The tools' inputs are unchanged.
+
 ## Recommended practice (optional, user-maintained)
 Keep an append-only decision log per project next to your work, one line per event:
 

@@ -19,7 +19,7 @@ Contributions that address any of these are welcome.
 | A saved context is a summary, not the conversation | Reasoning and exact wording are lost | Keep a decision log (see `docs/CONTEXT_SYSTEM.md`) |
 | `save_context` overwrites the project snapshot | History of earlier snapshots is lost | Keep an append-only log next to the snapshot |
 | No "active project" pointer | A new chat does not know which project to load; the `default` project is often empty | Save a `default` context that points to the active project |
-| A new chat only loads context if told to (or if it follows the server instructions) | Behavior depends on the model | Say "Load my context for default" at the start |
+| A new chat only loads context if told to (or if it follows the server instructions) | Behavior depends on the model. The first tool result of a session now carries a reminder, but a chat that never calls a tool never sees it | Say "Load my context for default" at the start, or add a standing instruction in your account settings |
 | No drift check between saved state and the disk | Notes can claim files exist that were moved or edited | Compare listed files against the disk on load |
 | No locking between concurrent sessions or accounts | Two chats can overwrite each other's snapshot | Use per-project names; avoid saving the same project from two chats at once |
 | The auto activity log keeps only state-changing actions, 120 characters each, last 200 lines | User requests, decisions, outcomes and errors are not recorded | Add an explicit decision log |

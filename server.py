@@ -175,6 +175,57 @@ def _activity_section(n: int = 20) -> str:
 # ---------------------------------------------------------
 # Rate Limiter — prevent abuse (OpenClaw's #2 flaw)
 # ---------------------------------------------------------
+# ---------------------------------------------------------
+# Session nudge - remind the model that saved context exists
+# ---------------------------------------------------------
+import functools as _functools
+import time as _nudge_time
+
+NUDGE_IDLE_SECONDS = 30 * 60  # a gap this long is treated as a new session
+_last_tool_call: Optional[float] = None
+
+
+def _saved_project_names() -> list:
+    try:
+        mem = Path(__file__).resolve().parent / "memory"
+        return sorted(p.stem[len("context_"):] for p in mem.glob("context_*.md"))
+    except Exception:
+        return []
+
+
+def _nudge_text(tool_name: str) -> str:
+    """One-off reminder on the first tool call of a new session, else ''. Never raises."""
+    global _last_tool_call
+    try:
+        now = _nudge_time.time()
+        first = _last_tool_call is None or (now - _last_tool_call) > NUDGE_IDLE_SECONDS
+        _last_tool_call = now
+        if tool_name in ("load_context", "save_context") or not first:
+            return ""
+        names = _saved_project_names()
+        if not names:
+            return ""
+        return (
+            "\n\n[CloudLap] New session detected. Saved context exists for: "
+            + ", ".join(names)
+            + ". Call load_context(project_name='...') (try 'default' first) "
+            "to restore previous work before continuing."
+        )
+    except Exception:
+        return ""
+
+
+def _nudged(fn):
+    """Decorator: append the session nudge to a tool's string result."""
+    @_functools.wraps(fn)
+    async def wrapper(*args, **kwargs):
+        result = await fn(*args, **kwargs)
+        if isinstance(result, str):
+            result += _nudge_text(fn.__name__)
+        return result
+    return wrapper
+
+
 _rate_log: list[float] = []
 RATE_LIMIT = 30  # max calls per minute
 
@@ -253,6 +304,7 @@ mcp = MCPServer("CloudLap", instructions=_instructions)
 
 
 @mcp.tool()
+@_nudged
 async def run_command(command: str, cwd: str = "") -> str:
     """Execute a shell command with security validation and timeout.
 
@@ -355,6 +407,7 @@ async def run_command(command: str, cwd: str = "") -> str:
 
 
 @mcp.tool()
+@_nudged
 async def read_file(path: str) -> str:
     """Read a file's contents up to 100KB with truncation warning.
 
@@ -403,6 +456,7 @@ async def read_file(path: str) -> str:
 
 
 @mcp.tool()
+@_nudged
 async def write_file(path: str, content: str) -> str:
     """Write or overwrite a file with given content, creating parent directories if needed.
 
@@ -442,6 +496,7 @@ async def write_file(path: str, content: str) -> str:
 
 
 @mcp.tool()
+@_nudged
 async def list_directory(path: str = "") -> str:
     """List directory contents with sizes and modification timestamps.
 
@@ -502,6 +557,7 @@ async def list_directory(path: str = "") -> str:
 
 
 @mcp.tool()
+@_nudged
 async def search_files(pattern: str, directory: str = "") -> str:
     """Search for files matching a glob pattern recursively.
 
@@ -567,6 +623,7 @@ async def search_files(pattern: str, directory: str = "") -> str:
 
 
 @mcp.tool()
+@_nudged
 async def get_system_info() -> str:
     """Get system information including OS, hostname, Python version, CPU, RAM, and disk usage.
 
@@ -787,6 +844,7 @@ async def append_memory(note: str, category: str = "general") -> str:
 
 
 @mcp.tool()
+@_nudged
 async def list_projects() -> str:
     """List all projects that have saved context."""
     logger.info("Listing projects with saved context")
