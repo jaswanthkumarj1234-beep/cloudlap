@@ -1,13 +1,32 @@
 ## Download and install (no coding needed)
 
-**[Download CloudLap for Windows](https://github.com/jaswanthkumarj1234-beep/cloudlap/releases/latest/download/CloudLap-Setup.exe)**
+### >>> [Download CloudLap for Windows](https://github.com/jaswanthkumarj1234-beep/cloudlap/releases/latest/download/CloudLap-Setup.exe) <<<
 
-1. Click the link above and open the downloaded **CloudLap-Setup.exe**.
-2. Click **Next**, then **Install**. It adds CloudLap to your Start menu.
-3. A setup window opens and guides you: authenticator (Google or Microsoft), your ngrok address, and how long each unlock lasts (10, 20, 30 or 60 minutes). Then connect it to Claude.
+Direct link: https://github.com/jaswanthkumarj1234-beep/cloudlap/releases/latest/download/CloudLap-Setup.exe
 
-Windows may show a blue SmartScreen box: click **More info**, then **Run anyway**.
-No typing commands and no pasting into a terminal. Everything below is for developers.
+### Step-by-step guide
+
+**1. Download.** Click the link above. Your browser saves **CloudLap-Setup.exe**.
+
+**2. Install.** Open it. If Windows shows a blue "Windows protected your PC" box, click **More info**, then **Run anyway**. Click **Next**, then **Install**. CloudLap is added to your Start menu.
+
+**3. Follow the setup window.** It opens by itself and has five screens. Have your phone and a free [ngrok](https://ngrok.com) account ready.
+
+| Screen | What to do |
+|--------|-----------|
+| Install | Wait while the needed parts install. Nothing to type. |
+| Authenticator | On your phone open **Google Authenticator** or **Microsoft Authenticator**, tap **+**, scan the picture, then type the 6 digits it shows. |
+| ngrok | Click the buttons to open ngrok. Copy your **Authtoken** and your free **domain** into the two boxes (use **Paste from clipboard**). |
+| Options | Choose how long one unlock lasts: **10, 20, 30 or 60 minutes** (shorter is safer). Tick auto-start if you want CloudLap to start with Windows. |
+| Finish | Click **Copy address**. |
+
+**4. Connect to Claude.** In Claude open **Settings > Connectors > Add custom connector** and paste the address you copied. Keep that address private.
+
+**5. Use it.** Open your authenticator app and tell Claude: *Connect to CloudLap, code is 123456* (use the real code). CloudLap stays unlocked for the time you chose, then locks itself.
+
+**Trouble?** Open CloudLap from the Start menu and read the status lines. Use the **Set up again** button to repeat the setup window. Uninstall from Windows Settings > Apps.
+
+Everything below is for developers.
 ---
 
 <div align="center">

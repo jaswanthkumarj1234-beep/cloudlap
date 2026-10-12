@@ -6,16 +6,17 @@ Claude is the client that connects to your laptop.
 
 ## Quick start (recommended)
 
-1. Install [Python 3.10+](https://python.org/downloads) and tick **Add Python to PATH**.
-2. On the GitHub page click **Code > Download ZIP**, unzip it, and double-click **`setup.bat`**.
-3. Answer the questions. The wizard installs everything, shows a QR code for your authenticator app,
-   sets up ngrok, starts CloudLap, and tells you the address to paste into Claude.
-   If Windows shows "Windows protected your PC" for `setup.bat`, click **More info > Run anyway**.
+**[Download CloudLap for Windows](https://github.com/jaswanthkumarj1234-beep/cloudlap/releases/latest/download/CloudLap-Setup.exe)**
 
-Have these ready: a phone with an authenticator app, and a free [ngrok](https://ngrok.com) account
-(you will copy an authtoken and create a free static domain). The wizard walks you through both.
+1. Open **CloudLap-Setup.exe**. If Windows shows "Windows protected your PC", click **More info > Run anyway**. Click **Next**, then **Install**.
+2. A setup window guides you: authenticator (Google or Microsoft Authenticator), your ngrok token and domain, and how long each unlock lasts (10, 20, 30 or 60 minutes).
+3. Click **Copy address**, then in Claude go to Settings > Connectors > Add custom connector and paste it.
+4. To use it, tell Claude: "Connect to CloudLap, code is 123456" (the real code from your authenticator app).
 
-The rest of this guide explains each step in detail, for anyone who prefers to do it by hand.
+Have these ready: a phone with an authenticator app, and a free [ngrok](https://ngrok.com) account.
+The rest of this guide is the manual route for developers, and it needs Python and the ZIP or git clone.
+
+
 
 ## What you need
 
