@@ -1,2 +1,4 @@
 *.bat -text
 *.vbs -text
+*.sh text eol=lf
+mac/** text eol=lf

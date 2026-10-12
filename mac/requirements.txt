@@ -1,0 +1,4 @@
+mcp[cli]>=1.0.0,<3
+pyotp
+psutil
+qrcode

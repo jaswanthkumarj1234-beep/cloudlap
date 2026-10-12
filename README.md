@@ -4,6 +4,17 @@
 
 Direct link: https://github.com/jaswanthkumarj1234-beep/cloudlap/releases/latest/download/CloudLap-Setup.exe
 
+### CloudLap for Mac
+
+Open **Terminal** (Cmd+Space, type Terminal) and paste this one line:
+
+```
+curl -fsSL https://raw.githubusercontent.com/jaswanthkumarj1234-beep/cloudlap/main/mac/install.sh | bash
+```
+
+It installs CloudLap, shows a QR code for your authenticator app, sets up ngrok, and starts at login.
+Full guide: [SETUP-MAC.md](SETUP-MAC.md). Windows steps are below.
+
 ### Step-by-step guide
 
 **1. Download.** Click the link above. Your browser saves **CloudLap-Setup.exe**.
@@ -120,7 +131,7 @@ Prefer to do it yourself? Follow these steps, and run `python totp_setup.py --sh
 
 ### Prerequisites
 
-- Windows 10 or 11 (macOS and Linux support planned)
+- Windows 10 or 11, or macOS (see [SETUP-MAC.md](SETUP-MAC.md)). Linux support planned
 - Python 3.10 or later — [download](https://python.org/downloads) (check "Add to PATH")
 - Free ngrok account — [sign up](https://dashboard.ngrok.com/signup)
 
@@ -242,6 +253,8 @@ cloudlap/
 ├── config.example.json    Configuration template
 ├── requirements.txt       Python dependencies
 ├── setup.bat              Windows installer script
+├── mac/                   macOS server, install.sh, uninstall.sh
+├── SETUP-MAC.md           macOS setup guide
 ├── start.bat              CLI launcher script
 ├── tests/
 │   └── test_server.py     26 unit tests
@@ -260,7 +273,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and guidelines.
 
 Areas where help is needed:
 
-- macOS and Linux support
+- Linux support and Mac testing on more macOS versions
 - Docker containerized deployment
 - Web-based dashboard UI
 - OAuth / token authentication
