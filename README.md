@@ -302,6 +302,13 @@ Areas where help is needed:
 - OAuth / token authentication
 - Multi-machine management
 
+## About this project
+
+I built CloudLap myself, combining my own experience with AI-assisted development — I used Claude throughout
+the process for parts of the implementation, debugging, documentation and this README. The architecture
+decisions, security model and overall direction are mine; Claude was a tool in the process, the way any
+developer today uses modern tooling to build faster.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
