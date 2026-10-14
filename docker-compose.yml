@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  cloudlap:
+    build: .
+    container_name: cloudlap
+    ports:
+      - "8787:8787"
+    volumes:
+      - ./config.json:/app/config.json
+      - ./audit_log.jsonl:/app/audit_log.jsonl
+    restart: unless-stopped

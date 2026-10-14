@@ -48,6 +48,7 @@ Everything below is for developers.
 
 [![CI](https://github.com/jaswanthkumarj1234-beep/cloudlap/actions/workflows/ci.yml/badge.svg)](https://github.com/jaswanthkumarj1234-beep/cloudlap/actions)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)](Dockerfile)
 [![MCP Compatible](https://img.shields.io/badge/MCP-compatible-8B5CF6)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](LICENSE)
 [![Tests: 26 passed](https://img.shields.io/badge/tests-26_passed-22C55E)](tests/)
@@ -56,9 +57,20 @@ Free · No API keys · Works from any device · Your data never leaves your mach
 
 <br>
 
-[Quick Start](#quick-start) · [How It Works](#how-it-works) · [Features](#features) · [Security](#security) · [Contributing](#contributing)
+[Quick Start](#quick-start) · [How It Works](#how-it-works) · [Features](#features) · [DevOps](#devops-practices-used-in-this-project) · [Security](#security) · [Contributing](#contributing)
 
 </div>
+
+---
+
+## DevOps practices used in this project
+
+- **Continuous Integration** — every push and pull request runs the full test suite automatically via GitHub Actions, across three Python versions (3.10, 3.11, 3.12). See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+- **Containerization** — a [`Dockerfile`](Dockerfile) and [`docker-compose.yml`](docker-compose.yml) package the server so it runs the same way on any machine.
+- **Automated testing** — 26+ unit tests covering auth, server behaviour, and the launcher, run on every commit.
+- **Audit logging** — every tool call is written to `audit_log.jsonl` with a timestamp, status and arguments, so there's a trail of what ran.
+- **Configuration as code** — `config.example.json` documents every setting while keeping real secrets (`config.json`) out of version control via `.gitignore`.
+- **Issue templates & CONTRIBUTING.md** — a basic workflow for reporting bugs and proposing changes.
 
 ---
 
@@ -192,6 +204,16 @@ python server.py
 ngrok http --url=your-domain.ngrok-free.dev 127.0.0.1:8787
 ```
 
+**Docker mode:**
+
+```bash
+docker compose up -d --build
+```
+
+This builds the image from the included `Dockerfile` and runs the server on port 8787, mounting your
+`config.json` and `audit_log.jsonl` from the host. You still run ngrok (or your own reverse proxy)
+separately to expose it.
+
 ### Connecting Claude
 
 1. Open [claude.ai](https://claude.ai) or the Claude mobile app
@@ -250,6 +272,8 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting and hardening recomme
 cloudlap/
 ├── server.py              MCP server with 10 tools
 ├── launcher.pyw           Desktop window (status, start/stop, copy address)
+├── Dockerfile              Container build for the server
+├── docker-compose.yml      One-command container run
 ├── config.example.json    Configuration template
 ├── requirements.txt       Python dependencies
 ├── setup.bat              Windows installer script
@@ -274,7 +298,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and guidelines.
 Areas where help is needed:
 
 - Linux support and Mac testing on more macOS versions
-- Docker containerized deployment
 - Web-based dashboard UI
 - OAuth / token authentication
 - Multi-machine management
